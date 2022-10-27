@@ -78,7 +78,7 @@ dependencies:
 
 - If you would like to use Apxor's Video InApp messages in Android, add the following property in `gradle.properties` file and add the following dependency in `app/build.gradle` file
 
-  > Note: Exoplayer dependency version version `>= 2.14.0` is mandatory for Video InApps to work
+  > Note: Exoplayer dependency version `>= 2.14.0` is mandatory for Video InApps to work
 
   ```properties
   android.enableDexingArtifactTransform = false
