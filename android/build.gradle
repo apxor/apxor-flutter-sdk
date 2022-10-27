@@ -1,0 +1,45 @@
+group 'com.apxor.flutter'
+version '1.0'
+
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:4.1.0'
+    }
+}
+
+rootProject.allprojects {
+    repositories {
+        google()
+        mavenCentral()
+        maven {
+            url "https://repo.apxor.com/artifactory/list/libs-release-android/"
+        }
+    }
+}
+
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 31
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    defaultConfig {
+        minSdkVersion 16
+    }
+}
+
+dependencies {
+    compileOnly "com.apxor.android:apxor-android-sdk-core:2.8.5@aar"
+    compileOnly "com.apxor.android:apxor-android-sdk-qe:1.5.2@aar"
+    compileOnly "com.apxor.android:apxor-android-sdk-rtm:1.9.2@aar"
+    compileOnly "com.apxor.android:wysiwyg:1.2.9@aar"
+}

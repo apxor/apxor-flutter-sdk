@@ -1,0 +1,24 @@
+name: apxor_flutter
+description: This is Flutter SDK wrapper of Apxor SDK. You can read more about Apxor on apxor.com
+version: 1.0.0
+homepage: https://www.apxor.com
+
+environment:
+  sdk: ">=2.16.2 <3.0.0"
+  flutter: ">=2.5.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^1.0.0
+
+flutter:
+  plugin:
+    platforms:
+      android:
+        package: com.apxor.flutter
+        pluginClass: ApxorFlutterPlugin

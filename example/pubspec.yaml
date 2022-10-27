@@ -1,0 +1,26 @@
+name: apxor_flutter_example
+description: Demonstrates how to use the apxor_flutter plugin.
+publish_to: "none"
+
+environment:
+  sdk: ">=2.16.2 <3.0.0"
+dependencies:
+  flutter:
+    sdk: flutter
+  apxor_flutter:
+    path: ../
+  adaptive_navigation: ^0.0.3
+  collection: ^1.15.0
+  cupertino_icons: ^1.0.2
+  path_to_regexp: ^0.4.0
+  quiver: ^3.0.0
+  url_launcher: ^6.0.0
+  url_strategy: ^0.2.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^1.0.0
+
+flutter:
+  uses-material-design: true
