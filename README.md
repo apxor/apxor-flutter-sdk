@@ -198,3 +198,7 @@ ApxorFlutter.trackScreen("AddToCartScreen");
 
 ApxorFlutter.trackScreen("PaymentScreen");
 ```
+
+## Latest plugin versions
+
+Check the latest plugin versions [here](https://docs.apxor.com/docs/SDK/androidx-guide)
