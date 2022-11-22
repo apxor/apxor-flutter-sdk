@@ -197,29 +197,53 @@ class ApxorFlutter {
   }
 
   static Future<String?> _gt(String p) async {
-    LT? t = await _g(f: true, p: p);
-    if (t != null) {
-      if (t.e.widget is Text) {
-        return (t.e.widget as Text).data;
-      } else if (t.e.widget is RichText) {
-        return (t.e.widget as RichText).text.toPlainText();
+    try {
+      LT? t = await _g(f: true, p: p);
+      if (t != null) {
+        if (t.e.widget is Text) {
+          return (t.e.widget as Text).data;
+        } else if (t.e.widget is RichText) {
+          return (t.e.widget as RichText).text.toPlainText();
+        }
       }
+    } catch (e) {
+      developer.log(e.toString(),
+          name: "Apxor", stackTrace: StackTrace.current);
     }
     return null;
   }
 
   static Future<List> _f(String p) async {
-    LT? t = await _g(f: true, p: p);
-    if (t != null && t.po != null) {
-      Rect r = t.po!;
-      return [r.top.toInt(), r.left.toInt(), r.right.toInt(), r.bottom.toInt()];
+    try {
+      LT? t = await _g(f: true, p: p);
+      if (t != null && t.po != null) {
+        Rect r = t.po!;
+        return [
+          r.top.toInt(),
+          r.left.toInt(),
+          r.right.toInt(),
+          r.bottom.toInt()
+        ];
+      }
+    } catch (e) {
+      developer.log(e.toString(),
+          name: "Apxor", stackTrace: StackTrace.current);
     }
     return [0, 0, 0, 0];
   }
 
   static Future<Map<String, dynamic>> _d1(double d) async {
-    LT? r = await _g();
-    return r!.toJ(d);
+    try {
+      LT? r = await _g();
+      if (r != null) {
+        developer.log(r.toString(), name: "Apxor");
+        return r.toJ(d);
+      }
+    } catch (e) {
+      developer.log(e.toString(),
+          name: "Apxor", stackTrace: StackTrace.current);
+    }
+    return {};
   }
 
   static Future<LT?> _g({bool f = false, String p = ""}) async {
@@ -230,6 +254,7 @@ class ApxorFlutter {
     lt.e = x;
     lt.c = <LT>[];
     lts.add(lt);
+    developer.log("Length: $n, C: ${lts.length}", name: "Apxor");
 
     void _v(List<LT> ltList) {
       var i = 0;
@@ -324,5 +349,10 @@ class LT {
       k4: {k6: t, k7: b, k8: l, k9: r},
       k5: a
     };
+  }
+
+  @override
+  String toString() {
+    return "${objectRuntimeType(e.widget, 'W')} - ${c.length}";
   }
 }
