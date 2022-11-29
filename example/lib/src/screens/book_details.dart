@@ -42,6 +42,7 @@ class BookDetailsScreen extends StatelessWidget {
             ),
             TextButton(
               child: const Text('View author (Push)'),
+              key: const ValueKey("Push"),
               onPressed: () {
                 Navigator.of(context).push<void>(
                   MaterialPageRoute<void>(
@@ -56,6 +57,7 @@ class BookDetailsScreen extends StatelessWidget {
               builder: (context, followLink) => TextButton(
                 onPressed: followLink,
                 child: const Text('View author (Link)'),
+                key: const ValueKey("Link"),
               ),
             ),
           ],

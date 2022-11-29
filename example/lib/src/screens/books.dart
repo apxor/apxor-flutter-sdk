@@ -61,14 +61,17 @@ class _BooksScreenState extends State<BooksScreen>
               Tab(
                 text: 'Popular',
                 icon: Icon(Icons.people),
+                key: ValueKey('Popular'),
               ),
               Tab(
                 text: 'New',
                 icon: Icon(Icons.new_releases),
+                key: ValueKey('New'),
               ),
               Tab(
                 text: 'All',
                 icon: Icon(Icons.list),
+                key: ValueKey('All'),
               ),
             ],
           ),
@@ -110,7 +113,7 @@ class _BooksScreenState extends State<BooksScreen>
         break;
       case 0:
       default:
-      ApxorFlutter.logAppEvent("PopularBooksTabClicked");
+        ApxorFlutter.logAppEvent("PopularBooksTabClicked");
         _routeState.go('/books/popular');
         break;
     }

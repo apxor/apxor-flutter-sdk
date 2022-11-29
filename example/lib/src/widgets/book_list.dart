@@ -26,6 +26,7 @@ class BookList extends StatelessWidget {
           subtitle: Text(
             books[index].author.name,
           ),
+          key: ValueKey(books[index].title),
           onTap: onTap != null ? () => onTap!(books[index]) : null,
         ),
       );
