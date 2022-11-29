@@ -6,7 +6,6 @@ import static com.apxor.androidsdk.core.Constants.CLIENT_EVENTS;
 import android.os.Handler;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import com.apxor.androidsdk.core.ApxorDataCallback;
 import com.apxor.androidsdk.core.ApxorSDK;
@@ -15,6 +14,7 @@ import com.apxor.androidsdk.core.EventListener;
 import com.apxor.androidsdk.core.SDKController;
 import com.apxor.androidsdk.core.models.BaseApxorEvent;
 import com.apxor.androidsdk.core.utils.BidiEvents;
+import com.apxor.androidsdk.core.utils.Logger;
 import com.apxor.androidsdk.core.utils.Receiver;
 import com.apxor.androidsdk.plugins.realtimeui.UIManager;
 
@@ -27,6 +27,8 @@ import java.util.Iterator;
 import java.util.Map;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
+import io.flutter.plugin.common.BasicMessageChannel;
+import io.flutter.plugin.common.JSONMessageCodec;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
@@ -47,67 +49,70 @@ public class ApxorFlutterPlugin implements FlutterPlugin, MethodCallHandler, Eve
   private static final String QYS = h("`crz]dp");
 
   private MethodChannel channel;
+  private BasicMessageChannel<Object> commandChannel;
   private String id;
-
-  private final BidiEvents events = new BidiEvents() {
-
-    @Override
-    public void sendAndGet(JSONObject jsonObject, Receiver a) {
-      BidiEvents bus = SDKController.getInstance().getBidiEventsWithName("APXOR_FLUTTER_C");
-      if (bus != null) {
-        bus.receiveAndRespond(jsonObject, a);
-      }
-    }
-
-    @Override
-    public void receiveAndRespond(JSONObject data, Receiver receiver) {
-      try {
-        String name = data.getString("n");
-        HashMap<String, Object> map = new HashMap<>();
-
-        Result result = new Result() {
-          @Override
-          public void success(@Nullable Object result) {
-            resp(receiver, result);
-          }
-
-          @Override
-          public void error(@NonNull String errorCode, @Nullable String errorMessage, @Nullable Object errorDetails) {
-            resp(receiver, null);
-          }
-
-          @Override
-          public void notImplemented() {
-
-          }
-        };
-
-        if (name.equals(QFU)) {
-          map.put("p", data.getString("p"));
-          channel.invokeMethod("gt", map, result);
-        } else if (name.equals(QYE)) {
-          map.put("d", data.getDouble("d"));
-          channel.invokeMethod("d", map, result);
-        } else if (name.equals(QYG)) {
-          map.put("p", data.getString("p"));
-          channel.invokeMethod("f", map, result);
-        }
-      } catch (JSONException ignored) {
-
-      }
-    }
-  };
 
   @Override
   public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
     channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "plugins.flutter.io/apxor_flutter");
     channel.setMethodCallHandler(this);
+    commandChannel = new BasicMessageChannel<>(
+            flutterPluginBinding.getBinaryMessenger(),
+            "plugins.flutter.io/apxor_commands",
+            JSONMessageCodec.INSTANCE
+    );
 
     SDKController controller = SDKController.getInstance();
     controller.markAsFlutter();
     controller.registerToEvent(CLIENT_EVENTS, this);
 
     id = ApxorSDK.getDeviceId(flutterPluginBinding.getApplicationContext());
+
+    BidiEvents events = new BidiEvents() {
+
+      @Override
+      public void sendAndGet(JSONObject jsonObject, Receiver a) {
+        BidiEvents bus = SDKController.getInstance().getBidiEventsWithName("APXOR_FLUTTER_C");
+        if (bus != null) {
+          bus.receiveAndRespond(jsonObject, a);
+        }
+      }
+
+      @Override
+      public void receiveAndRespond(JSONObject data, Receiver receiver) {
+        try {
+          String name = data.getString("n");
+          long time = System.currentTimeMillis();
+          data.put("t", time);
+
+          String eName = null;
+          if (name.equals(QFU)) {
+            eName = "gt";
+          } else if (name.equals(QYE)) {
+            eName = "d";
+          } else if (name.equals(QYG)) {
+            eName = "f";
+          }
+
+          if (eName != null) {
+            controller.dispatchEvent(new Event(eName, data));
+            String finalEName = eName;
+            controller.registerToEvent(CLIENT_EVENTS, new EventListener() {
+              @Override
+              public void onEvent(BaseApxorEvent event) {
+                if (event.getEventName().equals(finalEName + "_" + time)) {
+                  controller.deregisterFromEvent(CLIENT_EVENTS, this);
+                  resp(receiver, event.getJSONData().opt("r"));
+                }
+              }
+            });
+          }
+        } catch (JSONException e) {
+          e.printStackTrace();
+        }
+      }
+    };
+
     controller.registerForBidiEvents("APXOR_FLUTTER_W", events);
   }
 
@@ -178,20 +183,37 @@ public class ApxorFlutterPlugin implements FlutterPlugin, MethodCallHandler, Eve
   public void onEvent(BaseApxorEvent event) {
     JSONObject data = event.getJSONData();
     HashMap<String, Object> map = new HashMap<>();
-    switch (event.getEventName()) {
-      case "apx_redirection":
-        SDKController.getInstance().dispatchToMainThread(() -> {
-          try {
-            map.put("u", data.getJSONObject(ADDITIONAL_INFO).getString("url"));
-            channel.invokeMethod("redirect", map);
-          } catch (Exception ignored) {
+    SDKController controller = SDKController.getInstance();
+    long time = data.optLong("t", -1);
 
-          }
+    try {
+      String eventName = event.getEventName();
+      switch (eventName) {
+        case "apx_redirection":
+          map.put("u", data.getJSONObject(ADDITIONAL_INFO).getString("url"));
+          eventName = "redirect";
+          break;
+        case "apx_hard_back_button_pressed":
+          handleBB();
+          break;
+        case "d":
+          map.put("d", data.getDouble("d"));
+          break;
+        case "f":
+        case "gt":
+          map.put("p", data.getString("p"));
+          break;
+      }
+      if (map.size() > 0) {
+        map.put("name", eventName);
+        map.put("t", time);
+        controller.dispatchToMainThread(() -> {
+          Logger.debug("", "Command: " + map);
+          commandChannel.send(map);
         }, 0);
-        break;
-      case "apx_hard_back_button_pressed":
-        handleBB();
-        break;
+      }
+    } catch (JSONException e) {
+      e.printStackTrace();
     }
   }
 
@@ -299,33 +321,46 @@ public class ApxorFlutterPlugin implements FlutterPlugin, MethodCallHandler, Eve
   }
 
   private void handleES(MethodCall call, Result result) {
-    Map<String, Object> path = call.argument("p");
-    if (path != null) {
-      SDKController.getInstance().dispatchEvent(new Event("apx_fl", new JSONObject(path)));
+    try {
+      Map<String, Object> path = call.argument("r");
+      JSONObject r = new JSONObject();
+      Long time = call.<Long>argument("t");
+      if (path != null) {
+        r.put("r", path);
+      }
+      SDKController.getInstance().dispatchEvent(new Event("d_" + time, r));
+    } catch (Exception e) {
+      e.printStackTrace();
     }
     result.success(null);
   }
 
   private void handleGS(MethodCall call, Result result) {
     try {
-      Map<String, Integer> data = call.<HashMap<String, Integer>>arguments();
+      Map<String, Integer> data = call.argument("r");
+      JSONObject r = new JSONObject();
+      Long time = call.<Long>argument("t");
       if (data != null) {
-        SDKController.getInstance().dispatchEvent(new Event(QYS, new JSONObject(data)));
+        r.put("r", data);
       }
-    } catch (Exception ignored) {
-
+      SDKController.getInstance().dispatchEvent(new Event("f_" + time, r));
+    } catch (Exception e) {
+      e.printStackTrace();
     }
     result.success(null);
   }
 
   private void handleFUS(MethodCall call, Result result) {
     try {
-      Map<String, Object> data = call.<HashMap<String, Object>>arguments();
+      Map<String, Object> data = call.argument("r");
+      JSONObject r = new JSONObject();
+      Long time = call.<Long>argument("t");
       if (data != null) {
-        SDKController.getInstance().dispatchEvent(new Event(QFS, new JSONObject(data)));
+        r.put("r", data);
       }
-    } catch (Exception ignored) {
-
+      SDKController.getInstance().dispatchEvent(new Event("gt_" + time, r));
+    } catch (Exception e) {
+      e.printStackTrace();
     }
     result.success(null);
   }
@@ -333,18 +368,23 @@ public class ApxorFlutterPlugin implements FlutterPlugin, MethodCallHandler, Eve
   private void handleBB() {
     try {
       UIManager.getInstance().removeMessage("", null);
-    } catch (Exception ignored) {
-
+    } catch (Exception e) {
+      e.printStackTrace();
     }
   }
 
   private void resp(Receiver receiver, Object result) {
     SDKController.getInstance().dispatchToMainThread(() -> {
-      JSONObject response = null;
-      if (result != null) {
-        response = new JSONObject((HashMap<String, Object>) result);
+      try {
+        JSONObject response = null;
+        if (result != null) {
+          response = new JSONObject((HashMap<String, Object>) result);
+        }
+        Logger.debug("", "Result: " + result + ", response: " + response);
+        receiver.onReceive(response);
+      } catch (Exception e) {
+        e.printStackTrace();
       }
-      receiver.onReceive(response);
     }, 0);
   }
 

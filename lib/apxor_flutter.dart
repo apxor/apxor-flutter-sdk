@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:developer' as developer;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -31,9 +30,69 @@ class ApxorFlutter {
 
   static ApxDeeplinkListener? _deeplinkListener;
 
-  static void _init() async {
-    _channel.setMethodCallHandler(_methodCallHandler);
-    developer.log("Apxor FlutterSDK initialized");
+  static bool _init() {
+    BasicMessageChannel<dynamic> channel = BasicMessageChannel(
+        "plugins.flutter.io/apxor_commands", JSONMessageCodec());
+    channel.setMessageHandler((message) async {
+      print(message);
+      String name = message["name"];
+      switch (name) {
+        case "d":
+          {
+            dynamic d = await _d1(message["d"]);
+            _channel.invokeMethod("dr", <String, dynamic>{
+              'r': d,
+              't': message["t"],
+            });
+            break;
+          }
+        case "f":
+          {
+            String? p = message["p"];
+            if (_isValidString(p)) {
+              List l = await _f(p!);
+              _channel.invokeMethod("fr", <String, dynamic>{
+                't': message["t"],
+                'r': {
+                  't': l[0],
+                  'l': l[1],
+                  'r': l[2],
+                  'b': l[3],
+                }
+              });
+            } else {
+              print("Error: Invalid string in f");
+            }
+            break;
+          }
+        case "gt":
+          {
+            String? p = message["p"];
+            if (_isValidString(p)) {
+              String? t = await _gt(p!);
+              _channel.invokeMethod("gtr", <String, dynamic>{
+                'r': {'st': t != null, 't': t ?? null},
+                't': message["t"],
+              });
+            } else {
+              print("Error: Invalid string in gt");
+            }
+            break;
+          }
+        case "redirect":
+          {
+            String url = message["u"];
+            if (_isValidString(url) && _deeplinkListener != null) {
+              _deeplinkListener!(url);
+            } else {
+              print("Error: Invalid string or no listener");
+            }
+            break;
+          }
+      }
+    });
+    print("Apxor FlutterSDK initialized");
+    return true;
   }
 
   static void _ensureInitialized() {
@@ -50,8 +109,7 @@ class ApxorFlutter {
       _channel.invokeMethod('logAppEvent',
           <String, dynamic>{'name': eventName, 'attrs': attributes});
     } else {
-      developer.log('`eventName` cannot be null or empty for logAppEvent',
-          name: 'Apxor');
+      print('Error: `eventName` cannot be null or empty for logAppEvent');
     }
   }
 
@@ -62,8 +120,7 @@ class ApxorFlutter {
       _channel.invokeMethod('logClientEvent',
           <String, dynamic>{'name': eventName, 'attrs': attributes});
     } else {
-      developer.log('`eventName` cannot be null or empty for logClientEvent',
-          name: 'Apxor');
+      print('Error: `eventName` cannot be null or empty for logClientEvent');
     }
   }
 
@@ -85,8 +142,8 @@ class ApxorFlutter {
       _channel.invokeMethod(
           'setUserIdentifier', <String, String>{'userId': customUserId});
     } else {
-      developer
-          .log('`customUserId` cannot be null or empty in `setUserIdentifier`');
+      print(
+          'Error: `customUserId` cannot be null or empty in `setUserIdentifier`');
     }
   }
 
@@ -96,22 +153,24 @@ class ApxorFlutter {
       _channel.invokeMethod(
           'setPushRegistrationToken', <String, String>{'token': token});
     } else {
-      developer
-          .log('`token` cannot be null or empty in `setPushRegistrationToken`');
+      print(
+          'Error: `token` cannot be null or empty in `setPushRegistrationToken`');
     }
   }
 
   static void trackScreen(String name) {
+    _ensureInitialized();
     if (!_isValidString(name)) {
-      developer.log('`name` cannot be null or empty in `trackScreen`');
+      print('Error: `name` cannot be null or empty in `trackScreen`');
       return;
     }
     _channel.invokeMethod('trackScreen', <String, String>{'name': name});
   }
 
   static void setCurrentScreenName(String name) {
+    _ensureInitialized();
     if (!_isValidString(name)) {
-      developer.log('`name` cannot be null or empty in `setCurrentScreenName`');
+      print('Error: `name` cannot be null or empty in `setCurrentScreenName`');
       return;
     }
     _channel
@@ -119,58 +178,23 @@ class ApxorFlutter {
   }
 
   static void setDeeplinkListener(ApxDeeplinkListener callback) {
+    _ensureInitialized();
     _deeplinkListener = callback;
   }
 
   static Future<String?> getDeviceId() async {
+    _ensureInitialized();
     return await _channel.invokeMethod('getDeviceId');
   }
 
   static Future<dynamic> getAttributes(List<String> attributes) async {
+    _ensureInitialized();
     return await _channel
         .invokeMethod('getAttributes', <String, dynamic>{'attrs': attributes});
   }
 
   static bool _isValidString(String? str) {
     return str != null && str.isNotEmpty;
-  }
-
-  static Future<dynamic> _methodCallHandler(MethodCall call) async {
-    switch (call.method) {
-      case "d":
-        return await _d1(call.arguments["d"]);
-      case "f":
-        {
-          String? p = call.arguments["p"];
-          if (_isValidString(p)) {
-            List l = await _f(p!);
-            return <String, dynamic>{
-              't': l[0],
-              'l': l[1],
-              'r': l[2],
-              'b': l[3],
-            };
-          }
-          break;
-        }
-      case "gt":
-        {
-          String? p = call.arguments["p"];
-          if (_isValidString(p)) {
-            String? t = await _gt(p!);
-            return <String, dynamic>{'st': t != null, 't': t ?? null};
-          }
-          break;
-        }
-      case "redirect":
-        {
-          String url = call.arguments["u"];
-          if (_isValidString(url) && _deeplinkListener != null) {
-            _deeplinkListener!(url);
-          }
-          break;
-        }
-    }
   }
 
   static dynamic _n(String n) {
@@ -207,8 +231,7 @@ class ApxorFlutter {
         }
       }
     } catch (e) {
-      developer.log(e.toString(),
-          name: "Apxor", stackTrace: StackTrace.current);
+      print("Error: ${e.toString()}");
     }
     return null;
   }
@@ -226,8 +249,7 @@ class ApxorFlutter {
         ];
       }
     } catch (e) {
-      developer.log(e.toString(),
-          name: "Apxor", stackTrace: StackTrace.current);
+      print("Error: ${e.toString()}");
     }
     return [0, 0, 0, 0];
   }
@@ -236,12 +258,11 @@ class ApxorFlutter {
     try {
       LT? r = await _g();
       if (r != null) {
-        developer.log(r.toString(), name: "Apxor");
+        print("Error: ${r.toString()}");
         return r.toJ(d);
       }
     } catch (e) {
-      developer.log(e.toString(),
-          name: "Apxor", stackTrace: StackTrace.current);
+      print("Error: ${e.toString()}");
     }
     return {};
   }
@@ -254,7 +275,6 @@ class ApxorFlutter {
     lt.e = x;
     lt.c = <LT>[];
     lts.add(lt);
-    developer.log("Length: $n, C: ${lts.length}", name: "Apxor");
 
     void _v(List<LT> ltList) {
       var i = 0;
@@ -272,6 +292,10 @@ class ApxorFlutter {
 
         if (obj != null && obj is RenderBox) {
           RenderBox b = ltn.e.findRenderObject() as RenderBox;
+          if (!b.hasSize) {
+            print("Error: No size for $b");
+            return null;
+          }
           Offset o;
           final s = ltn.e.findAncestorStateOfType<NavigatorState>();
           if (s != null) {
@@ -287,6 +311,10 @@ class ApxorFlutter {
         ltn.e.visitChildElements((element) {
           LT tmp = LT(e: element);
           tmp.e = element;
+          if (element.widget.key is ValueKey) {
+            var key = element.widget.key as ValueKey;
+            tmp.k = key.value.toString();
+          }
           a.add(tmp);
         });
         _v(a);
@@ -303,7 +331,8 @@ class ApxorFlutter {
         LT ltn = l[i];
         ltn.p =
             "$s${l.length > 1 ? "[$i]" : ""}/${objectRuntimeType(ltn.e.widget, 'W')}";
-        if (isF && ltn.p.toString() == pstr) {
+        if (isF &&
+            (ltn.p.toString() == pstr || (ltn.k != null && ltn.k == pstr))) {
           return ltn;
         }
         LT? t = _crtLt(ltn.c, ltn.p.toString(), isF: isF, pstr: pstr);
@@ -324,6 +353,7 @@ class LT {
   late Element e;
   Rect? po;
   String? p;
+  String? k;
   late List<LT> c;
 
   LT({required Element e});
@@ -336,15 +366,19 @@ class LT {
 
     int t = 0, l = 0, r = 0, b = 0;
     if (po != null) {
-      t = (po!.top * d).toInt();
-      b = (po!.bottom * d).toInt();
-      l = (po!.left * d).toInt();
-      r = (po!.right * d).toInt();
+      var w = (po!.top * d);
+      var x = (po!.bottom * d);
+      var y = (po!.left * d);
+      var z = (po!.right * d);
+      t = w.isNaN || w.isInfinite ? 0 : w.toInt();
+      b = x.isNaN || x.isInfinite ? 0 : x.toInt();
+      l = y.isNaN || y.isInfinite ? 0 : y.toInt();
+      r = z.isNaN || z.isInfinite ? 0 : z.toInt();
     }
 
     return {
-      k1: '',
-      k2: '',
+      k1: k != null && k!.isNotEmpty ? k : '',
+      k2: k != null && k!.isNotEmpty ? k : '',
       k3: objectRuntimeType(e.widget, 'W'),
       k4: {k6: t, k7: b, k8: l, k9: r},
       k5: a
