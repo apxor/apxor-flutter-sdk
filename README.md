@@ -1,5 +1,7 @@
 # Apxor Flutter SDK
 
+> **Note: Flutter SDK supported version is `>= 3.0.1`**
+
 Flutter SDK Wrapper for Apxor SDK. Read more about [Apxor](https://www.apxor.com)
 
 ## Integration
@@ -19,19 +21,19 @@ dependencies:
   ```groovy
   dependencies {
     // Core plugin tracks events & manages the session
-    api "com.apxor.android:apxor-android-sdk-core:2.8.5@aar"
+    api "com.apxor.android:apxor-android-sdk-core:2.8.6@aar"
 
     // Context Evaluation plugin
     api "com.apxor.android:apxor-android-sdk-qe:1.5.2@aar"
 
     // Real time messaging plugin to display Tooltips, Coachmarks, InApps and Onboarding walkthroughs
-    api "com.apxor.android:apxor-android-sdk-rtm:1.9.2@aar"
+    api "com.apxor.android:apxor-android-sdk-rtm:1.9.6@aar"
 
     // Display contextual surveys
-    api "com.apxor.android:surveys:1.3.6@aar"
+    api "com.apxor.android:surveys:1.3.7@aar"
 
     // Helper plugin for RTM plugin to pick the PATH for any view
-    api "com.apxor.android:wysiwyg:1.2.9@aar"
+    api "com.apxor.android:wysiwyg:1.3.0@aar"
   }
   ```
 
@@ -56,9 +58,9 @@ dependencies:
   }
   ```
 
-- Add `meta-data` tag in `AndroidManifest.xml` file with your unique `APP_ID` as a value.
+- Add `meta-data` tag in `AndroidManifest.xml` file with your unique `APP_ID` as a value. You need to replace `YOUR_APP_ID` with your actual App Id which you will get from the dashboard
 
-  > Note: Please contact your account manager about the APP_ID
+  > Note: Please contact your account manager about the APP_ID or you can find out in the dashboard
 
   ```xml
   <manifest xmlns:android="http://schemas.android.com/apk/res/android"
@@ -178,12 +180,14 @@ ApxorFlutter.logClientEvent("SoftBackPressed", attributes: {
 
 ### Handle deeplink redirection
 
-Use `setDeeplinkListener` to listen on deeplink redirection from Apxor SDK and handle redirection logic within application logic as follows
+Use `setDeeplinkListener` to listen on deeplink redirection from Apxor SDK and handle redirection logic (including external redirection) within application logic as follows
 
 ```dart
 ApxorFlutter.setDeeplinkListener((url) {
   // interpret the URL and handle redirection within the application
   _routeState.go(url!);
+
+  // Or, to an external URL which will be opened in Browser
 });
 ```
 
