@@ -249,7 +249,7 @@ class ApxorFlutter {
         ];
       }
     } catch (e) {
-      print("Error: ${e.toString()}");
+      print("Error:: ${e.toString()}");
     }
     return [0, 0, 0, 0];
   }
@@ -258,11 +258,10 @@ class ApxorFlutter {
     try {
       LT? r = await _g();
       if (r != null) {
-        print("Error: ${r.toString()}");
         return r.toJ(d);
       }
     } catch (e) {
-      print("Error: ${e.toString()}");
+      print("Error::: ${e.toString()}");
     }
     return {};
   }
@@ -378,7 +377,7 @@ class LT {
 
     return {
       k1: k != null && k!.isNotEmpty ? k : '',
-      k2: k != null && k!.isNotEmpty ? k : '',
+      k2: '',
       k3: objectRuntimeType(e.widget, 'W'),
       k4: {k6: t, k7: b, k8: l, k9: r},
       k5: a
