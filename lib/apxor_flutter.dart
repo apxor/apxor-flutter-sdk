@@ -39,7 +39,7 @@ class ApxorFlutter {
       switch (name) {
         case "d":
           {
-            dynamic d = await _d1(message["d"]);
+            dynamic d = await _d1((message["d"] as num).toDouble());
             _channel.invokeMethod("dr", <String, dynamic>{
               'r': d,
               't': message["t"],
