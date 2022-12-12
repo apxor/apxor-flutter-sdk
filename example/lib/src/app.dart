@@ -4,6 +4,7 @@
 
 import 'package:apxor_flutter/apxor_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 import 'auth.dart';
 import 'routing.dart';
@@ -112,9 +113,17 @@ class _BookstoreState extends State<Bookstore> {
       ),
     );
 
-    ApxorFlutter.setDeeplinkListener((url) {
+    ApxorFlutter.setDeeplinkListener((url) async {
       print("url: $url");
-      _routeState.go(url!);
+      if (url == null) {
+        return;
+      }
+
+      if (await canLaunchUrlString(url)) {
+        await launchUrlString(url);
+      } else {
+        _routeState.go(url);
+      }
     });
 
     return x;
