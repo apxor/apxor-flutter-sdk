@@ -203,6 +203,35 @@ ApxorFlutter.trackScreen("AddToCartScreen");
 ApxorFlutter.trackScreen("PaymentScreen");
 ```
 
+If you are using `Navigator` for navigation and routing in the application, you can add `ApxNavigationObserver` to the `observer` list and Apxor SDK track screens upon navigating from one screen to another.
+
+```dart
+return Navigator(
+  key: widget.navigatorKey,
+  observers: [ApxNavigationObserver()], // Add this line
+  onPopPage: (route, dynamic result) {
+    // ...
+  },
+  pages: [
+    // Pages
+  ],
+);
+```
+
+## Set TAGs for Widgets
+
+In order to display actions on Widgets, you can set tags for widgets using `ValueKey` with `String` as a value to it. It is highly recommended to set TAGs for Widgets which are Scrollable or contains multiple child widgets.
+
+```dart
+return TextButton(
+  child: const Text('Sign In'),
+  key: const ValueKey("Sign-in"), // Add ValueKey with String
+  onPressed: () {
+    // Sign in
+  },
+);
+```
+
 ## Latest plugin versions
 
 Check the latest plugin versions [here](https://docs.apxor.com/docs/SDK/androidx-guide)
