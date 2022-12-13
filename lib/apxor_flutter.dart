@@ -270,10 +270,23 @@ class ApxorFlutter {
     var n = await _channel.invokeMethod('gfn');
     var x = Function.apply(_n, [n.toString()]);
     List<LT> lts = <LT>[];
-    LT lt = LT(e: x!);
+    LT lt = LT();
     lt.e = x;
     lt.c = <LT>[];
     lts.add(lt);
+
+    void _attel(LT n) {
+      var element = n.e;
+      if (element.widget.key is ValueKey) {
+        var key = element.widget.key as ValueKey;
+        n.k = key.value
+            .toString()
+            .replaceFirst("[<'", "")
+            .replaceFirst("'>]", "")
+            .replaceFirst("[<", "")
+            .replaceFirst(">]", "");
+      }
+    }
 
     void _v(List<LT> ltList) {
       var i = 0;
@@ -307,13 +320,10 @@ class ApxorFlutter {
               o.dx, o.dy, o.dx + b.size.width, o.dy + b.size.height);
         }
         List<LT> a = <LT>[];
+        _attel(ltn);
         ltn.e.visitChildElements((element) {
-          LT tmp = LT(e: element);
+          LT tmp = LT();
           tmp.e = element;
-          if (element.widget.key is ValueKey) {
-            var key = element.widget.key as ValueKey;
-            tmp.k = key.value.toString();
-          }
           a.add(tmp);
         });
         _v(a);
@@ -324,17 +334,22 @@ class ApxorFlutter {
 
     _v(lts);
 
-    LT? _crtLt(List<LT> l, String s, {bool isF = false, String pstr = ""}) {
+    LT? _crtLt(List<LT> l, String s, String s1,
+        {bool isF = false, String pstr = ""}) {
       var i = 0;
       while (i < l.length) {
         LT ltn = l[i];
-        ltn.p =
-            "$s${l.length > 1 ? "[$i]" : ""}/${objectRuntimeType(ltn.e.widget, 'W')}";
+        String r =
+            "${l.length > 1 ? "[$i]" : ""}/${objectRuntimeType(ltn.e.widget, 'W')}";
+        String op = "$s1$r";
+        ltn.p = "${ltn.k != null ? ltn.k : s}$r";
         if (isF &&
-            (ltn.p.toString() == pstr || (ltn.k != null && ltn.k == pstr))) {
+            (ltn.p.toString() == pstr ||
+                op == pstr ||
+                (ltn.k != null && ltn.k == pstr))) {
           return ltn;
         }
-        LT? t = _crtLt(ltn.c, ltn.p.toString(), isF: isF, pstr: pstr);
+        LT? t = _crtLt(ltn.c, ltn.p.toString(), op, isF: isF, pstr: pstr);
         if (isF && t != null) {
           return t;
         }
@@ -343,8 +358,35 @@ class ApxorFlutter {
       return null;
     }
 
-    LT? tn = _crtLt(lts, "", isF: f, pstr: p);
-    return f ? tn : lts[0];
+    LT _x(LT l, LT? pr) {
+      var i = 0;
+      if (l.e.runtimeType.toString().startsWith("_") || l.po == pr?.po) {
+        if (pr != null) {
+          try {
+            i = pr.c.indexOf(l);
+            if (i != -1) {
+              pr.c.removeAt(i);
+              pr.c.addAll(l.c);
+              l = pr;
+            }
+          } catch (e) {
+            print("${e.toString()}");
+            return pr;
+          }
+        }
+      }
+
+      while (i < l.c.length) {
+        _x(l.c[i], l);
+        i++;
+      }
+
+      return l;
+    }
+
+    LT xr = _x(lts[0], null);
+    LT? tn = _crtLt([xr], "", "", isF: f, pstr: p);
+    return f ? tn : xr;
   }
 }
 
@@ -355,7 +397,7 @@ class LT {
   String? k;
   late List<LT> c;
 
-  LT({required Element e});
+  LT();
 
   Map<String, dynamic> toJ(double d) {
     var a = [];
