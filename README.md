@@ -21,19 +21,19 @@ dependencies:
   ```groovy
   dependencies {
     // Core plugin tracks events & manages the session
-    api "com.apxor.android:apxor-android-sdk-core:2.8.6@aar"
+    implementation "com.apxor.android:apxor-android-sdk-core:2.8.6@aar"
 
     // Context Evaluation plugin
-    api "com.apxor.android:apxor-android-sdk-qe:1.5.2@aar"
+    implementation "com.apxor.android:apxor-android-sdk-qe:1.5.3@aar"
 
     // Real time messaging plugin to display Tooltips, Coachmarks, InApps and Onboarding walkthroughs
-    api "com.apxor.android:apxor-android-sdk-rtm:1.9.6@aar"
+    implementation "com.apxor.android:apxor-android-sdk-rtm:1.9.7@aar"
 
     // Display contextual surveys
-    api "com.apxor.android:surveys:1.3.7@aar"
+    implementation "com.apxor.android:surveys:1.3.7@aar"
 
     // Helper plugin for RTM plugin to pick the PATH for any view
-    api "com.apxor.android:wysiwyg:1.3.0@aar"
+    implementation "com.apxor.android:wysiwyg:1.3.1@aar"
   }
   ```
 
