@@ -360,7 +360,7 @@ class ApxorFlutter {
 
     LT _x(LT l, LT? pr) {
       var i = 0;
-      if (l.e.runtimeType.toString().startsWith("_") || l.po == pr?.po) {
+      if (l.k == null && (l.e.runtimeType.toString().startsWith("_") || l.po == pr?.po)) {
         if (pr != null) {
           try {
             i = pr.c.indexOf(l);
