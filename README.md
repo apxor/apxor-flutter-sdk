@@ -21,19 +21,19 @@ dependencies:
   ```groovy
   dependencies {
     // Core plugin tracks events & manages the session
-    implementation "com.apxor.android:apxor-android-sdk-core:2.8.6@aar"
+    implementation "com.apxor.androidx:apxor-android-sdk-core:2.9.2@aar"
 
     // Context Evaluation plugin
-    implementation "com.apxor.android:apxor-android-sdk-qe:1.5.3@aar"
+    implementation "com.apxor.androidx:apxor-android-sdk-qe:1.5.6@aar"
 
     // Real time messaging plugin to display Tooltips, Coachmarks, InApps and Onboarding walkthroughs
-    implementation "com.apxor.android:apxor-android-sdk-rtm:1.9.7@aar"
+    implementation "com.apxor.androidx:apxor-android-sdk-rtm:2.1.6@aar"
 
     // Display contextual surveys
-    implementation "com.apxor.android:surveys:1.3.7@aar"
+    implementation "com.apxor.androidx:surveys:1.3.8@aar"
 
     // Helper plugin for RTM plugin to pick the PATH for any view
-    implementation "com.apxor.android:wysiwyg:1.3.1@aar"
+    implementation "com.apxor.androidx:wysiwyg:1.3.5@aar"
   }
   ```
 
@@ -143,7 +143,7 @@ A Session can be simply defined as user journey as he opens the app, until he cl
 To add session attributes that are specific to a session,
 
 ```dart
-ApxorFlutter.setSessionCustomInfo({
+ApxorFlutter.setSessionAttributes({
   "network": "4G",
   "location": "Hyderabad",
 });
