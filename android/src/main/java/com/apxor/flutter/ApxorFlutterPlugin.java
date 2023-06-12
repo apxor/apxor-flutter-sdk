@@ -257,7 +257,7 @@ public class ApxorFlutterPlugin implements FlutterPlugin, MethodCallHandler, Eve
   }
 
   private void handleSetUserIdentifier(MethodCall call, Result result) {
-    String customUserId = call.argument("id");
+    String customUserId = call.argument("userId");
     ApxorSDK.setUserIdentifier(customUserId);
     result.success(null);
   }

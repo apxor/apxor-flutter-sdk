@@ -1,6 +1,6 @@
 name: apxor_flutter
 description: This is Flutter SDK wrapper of Apxor SDK. You can read more about Apxor on apxor.com
-version: 1.0.4
+version: 1.0.5
 homepage: https://www.apxor.com
 
 environment:
