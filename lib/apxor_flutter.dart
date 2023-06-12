@@ -266,6 +266,18 @@ class ApxorFlutter {
     return {};
   }
 
+    static bool _isV(Widget w) {
+    bool v = true;
+    if (w is Visibility) {
+      v = w.visible;
+    } else if (w is Offstage) {
+      v = !w.offstage;
+    } else if (w is Opacity) {
+      v = w.opacity > 0;
+    }
+    return v;
+  }
+
   static Future<LT?> _g({bool f = false, String p = ""}) async {
     var n = await _channel.invokeMethod('gfn');
     var x = Function.apply(_n, [n.toString()]);
@@ -300,6 +312,13 @@ class ApxorFlutter {
             i++;
             continue;
           }
+        }
+        final isV = _isV(ltn.e.widget);
+        // check for visibility
+        if (!isV) {
+          // Invisible views are removed.
+          ltList.remove(ltn);
+          continue;
         }
 
         if (obj != null && obj is RenderBox) {
