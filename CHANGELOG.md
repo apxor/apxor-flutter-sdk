@@ -7,3 +7,8 @@
 ## 1.0.1
 
 - Added debug logs and try-catch blocks
+
+## 1.0.5
+
+- Fixed actions for invisble views 
+- Added custom user id support
