@@ -353,6 +353,7 @@ class ApxorFlutter {
             "${l.length > 1 ? "[$i]" : ""}/${objectRuntimeType(ltn.e.widget, 'W')}";
         String op = "$s1$r";
         ltn.p = "${ltn.k != null ? ltn.k : s}$r";
+        ltn.op = op;
         if (isF &&
             (ltn.p.toString() == pstr ||
                 op == pstr ||
@@ -404,6 +405,7 @@ class LT {
   late Element e;
   Rect? po;
   String? p;
+  String? op;
   String? k;
   late List<LT> c;
 
@@ -429,7 +431,7 @@ class LT {
 
     return {
       k1: k != null && k!.isNotEmpty ? k : '',
-      k2: '',
+      k2: op != null && op!.isNotEmpty ? op : '',
       k3: objectRuntimeType(e.widget, 'W'),
       k4: {k6: t, k7: b, k8: l, k9: r},
       k5: a
