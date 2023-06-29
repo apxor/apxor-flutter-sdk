@@ -431,7 +431,7 @@ class LT {
 
     return {
       k1: k != null && k!.isNotEmpty ? k : '',
-      k2: op != null && op!.isNotEmpty ? op : '',
+      k2: op != null ? op : '',
       k3: objectRuntimeType(e.widget, 'W'),
       k4: {k6: t, k7: b, k8: l, k9: r},
       k5: a
