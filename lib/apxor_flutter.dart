@@ -305,9 +305,18 @@ class ApxorFlutter {
       while (i < ltList.length) {
         LT ltn = ltList[i];
         RenderObject? obj = ltn.e.findRenderObject();
-        final isF = TickerMode.of(ltn.e);
+        if (!f) {
+          final isF = TickerMode.of(ltn.e);
+          if (!isF) {
+            ltList.remove(ltn);
+            i++;
+            continue;
+          }
+        }
         final isV = _isV(ltn.e.widget);
-        if (!isF || !isV) {
+        // check for visibility
+        if (!isV) {
+          // Invisible views are removed.
           ltList.remove(ltn);
           continue;
         }
