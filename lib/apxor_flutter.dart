@@ -305,9 +305,18 @@ class ApxorFlutter {
       while (i < ltList.length) {
         LT ltn = ltList[i];
         RenderObject? obj = ltn.e.findRenderObject();
-        final isF = TickerMode.of(ltn.e);
+        if (!f) {
+          final isF = TickerMode.of(ltn.e);
+          if (!isF) {
+            ltList.remove(ltn);
+            i++;
+            continue;
+          }
+        }
         final isV = _isV(ltn.e.widget);
-        if (!isF || !isV) {
+        // check for visibility
+        if (!isV) {
+          // Invisible views are removed.
           ltList.remove(ltn);
           continue;
         }
@@ -353,7 +362,6 @@ class ApxorFlutter {
             "${l.length > 1 ? "[$i]" : ""}/${objectRuntimeType(ltn.e.widget, 'W')}";
         String op = "$s1$r";
         ltn.p = "${ltn.k != null ? ltn.k : s}$r";
-        ltn.op = op;
         if (isF &&
             (ltn.p.toString() == pstr ||
                 op == pstr ||
@@ -405,7 +413,6 @@ class LT {
   late Element e;
   Rect? po;
   String? p;
-  String? op;
   String? k;
   late List<LT> c;
 
@@ -431,7 +438,7 @@ class LT {
 
     return {
       k1: k != null && k!.isNotEmpty ? k : '',
-      k2: op != null ? op : '',
+      k2: '',
       k3: objectRuntimeType(e.widget, 'W'),
       k4: {k6: t, k7: b, k8: l, k9: r},
       k5: a
