@@ -1,7 +1,7 @@
 package com.apxor.flutter;
 
 import static com.apxor.androidsdk.core.Constants.ADDITIONAL_INFO;
-import static com.apxor.androidsdk.core.Constants.CLIENT_EVENTS;
+import static com.apxor.androidsdk.core.Constants.INTERNAL_EVENTS;
 
 import android.os.Handler;
 
@@ -39,7 +39,6 @@ public class ApxorFlutterPlugin implements FlutterPlugin, MethodCallHandler, Eve
   private static final HashMap<String, Object> EMPTY_MAP = new HashMap<>();
 
   private static final String FUS = h("evp");
-  private static final String FGO = h("edl");
   private static final String ES = h("fp");
   private static final String GS = h("dp");
   private static final String QFU = h("crz]ev");
@@ -64,7 +63,7 @@ public class ApxorFlutterPlugin implements FlutterPlugin, MethodCallHandler, Eve
 
     SDKController controller = SDKController.getInstance();
     controller.markAsFlutter();
-    controller.registerToEvent(CLIENT_EVENTS, this);
+    controller.registerToEvent(INTERNAL_EVENTS, this);
 
     id = ApxorSDK.getDeviceId(flutterPluginBinding.getApplicationContext());
 
@@ -92,16 +91,18 @@ public class ApxorFlutterPlugin implements FlutterPlugin, MethodCallHandler, Eve
             eName = "d";
           } else if (name.equals(QYG)) {
             eName = "f";
+          } else if (name.equals("apx_iwv")){
+            eName = "iwv";
           }
 
           if (eName != null) {
             controller.dispatchEvent(new Event(eName, data));
             String finalEName = eName;
-            controller.registerToEvent(CLIENT_EVENTS, new EventListener() {
+            controller.registerToEvent(INTERNAL_EVENTS, new EventListener() {
               @Override
               public void onEvent(BaseApxorEvent event) {
                 if (event.getEventName().equals(finalEName + "_" + time)) {
-                  controller.deregisterFromEvent(CLIENT_EVENTS, this);
+                  controller.deregisterFromEvent(INTERNAL_EVENTS, this);
                   resp(receiver, event.getJSONData().opt("r"));
                 }
               }
@@ -119,7 +120,7 @@ public class ApxorFlutterPlugin implements FlutterPlugin, MethodCallHandler, Eve
   @Override
   public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
     channel.setMethodCallHandler(null);
-    SDKController.getInstance().deregisterFromEvent(CLIENT_EVENTS, this);
+    SDKController.getInstance().deregisterFromEvent(INTERNAL_EVENTS, this);
     SDKController.getInstance().setIsFlutter(false);
   }
 
@@ -134,6 +135,9 @@ public class ApxorFlutterPlugin implements FlutterPlugin, MethodCallHandler, Eve
         break;
       case "logClientEvent":
         handleLogClientEvent(call, result);
+        break;
+      case "logInternalEvent":
+        handleLogInternalEvent(call, result);
         break;
       case "setUserAttributes":
         handleSetUserAttributes(call, result);
@@ -161,13 +165,7 @@ public class ApxorFlutterPlugin implements FlutterPlugin, MethodCallHandler, Eve
         result.success(null);
         break;
       default:
-        if (call.method.equals(FGO)) {
-          int res = 0;
-          try {
-            res = Integer.parseInt(id.substring(0, 1), 36) / 37;
-          } catch (Exception ignored) {}
-          result.success(res);
-        } else if (call.method.equals(ES)) {
+        if (call.method.equals(ES)) {
           handleES(call, result);
         } else if (call.method.equals(GS)) {
           handleGS(call, result);
@@ -197,11 +195,28 @@ public class ApxorFlutterPlugin implements FlutterPlugin, MethodCallHandler, Eve
           handleBB();
           break;
         case "d":
-          map.put("d", data.getDouble("d"));
+          try{
+            map.put("d", data.getDouble("d"));
+            map.put("js",data.getString("js"));
+          } catch (Exception e){
+            
+          }
           break;
         case "f":
         case "gt":
           map.put("p", data.getString("p"));
+          break;
+        case "iwv":
+          try {
+            map.put("p", data.getString("p"));
+            map.put("ui", data.getString("ui"));
+            map.put("msgDuration", data.getInt("msgDuration"));
+            map.put("uuid", data.getString("uuid"));
+            map.put("configName", data.getString("configName"));
+            map.put("js",data.getString("js"));
+          } catch (Exception e){
+                
+            }
           break;
       }
       if (map.size() > 0) {
@@ -239,6 +254,9 @@ public class ApxorFlutterPlugin implements FlutterPlugin, MethodCallHandler, Eve
         case "Session":
           ApxorSDK.setSessionCustomInfo(attributes);
           break;
+        case "Internal":
+          SDKController.getInstance().logInternalEvent(eventName, attributes);
+          break;
         default:
           break;
       }
@@ -256,6 +274,9 @@ public class ApxorFlutterPlugin implements FlutterPlugin, MethodCallHandler, Eve
     handleMethodCall(call, result, "Client");
   }
 
+  private void handleLogInternalEvent(MethodCall call, Result result) {
+    handleMethodCall(call, result, "Internal");
+  }
   private void handleSetUserIdentifier(MethodCall call, Result result) {
     String customUserId = call.argument("userId");
     ApxorSDK.setUserIdentifier(customUserId);

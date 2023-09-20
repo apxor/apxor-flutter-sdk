@@ -1,6 +1,6 @@
 name: apxor_flutter
 description: This is Flutter SDK wrapper of Apxor SDK. You can read more about Apxor on apxor.com
-version: 1.0.5
+version: 1.0.6
 homepage: https://www.apxor.com
 
 environment:
@@ -10,6 +10,11 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_web_plugins:
+    sdk: flutter
+  js: ^0.6.7
+
+  logger: ^1.1.0
 
 dev_dependencies:
   flutter_test:
@@ -19,6 +24,12 @@ dev_dependencies:
 flutter:
   plugin:
     platforms:
+      web:
+        pluginClass: FlutterApxorWeb
+        fileName: apxor.dart
+
       android:
         package: com.apxor.flutter
+        pluginClass: ApxorFlutterPlugin
+      ios:
         pluginClass: ApxorFlutterPlugin

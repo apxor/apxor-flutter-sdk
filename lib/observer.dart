@@ -1,4 +1,4 @@
-import 'package:apxor_flutter/apxor_flutter.dart';
+import 'package:apxor_flutter/apxor.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
@@ -53,8 +53,8 @@ class ApxNavigationObserver extends NavigatorObserver {
   void _trackScreenIfPossible(Route? route) {
     if (route != null && route is PageRoute) {
       String? name = nameExtractor(route);
-      if (name != null) {
-        ApxorFlutter.trackScreen(name);
+      if (name != null && route.navigator?.context != null) {
+        ApxorFlutter.trackScreen(name, route.navigator!.context);
       }
     }
   }

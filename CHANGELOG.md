@@ -12,3 +12,9 @@
 
 - Fixed actions for invisble views 
 - Added custom user id support
+
+## 1.0.6
+
+- Added Support for iOS
+- Added Support for Web
+- Added Support for WebView

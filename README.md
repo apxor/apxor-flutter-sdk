@@ -196,11 +196,11 @@ ApxorFlutter.setDeeplinkListener((url) {
 You can use `ApxorFlutter.trackScreen` API to track screen navigations. Examples are as follows
 
 ```dart
-ApxorFlutter.trackScreen("LoginScreen");
+ApxorFlutter.trackScreen("LoginScreen",context);
 
-ApxorFlutter.trackScreen("AddToCartScreen");
+ApxorFlutter.trackScreen("AddToCartScreen",context);
 
-ApxorFlutter.trackScreen("PaymentScreen");
+ApxorFlutter.trackScreen("PaymentScreen",context);
 ```
 
 If you are using `Navigator` for navigation and routing in the application, you can add `ApxNavigationObserver` to the `observer` list and Apxor SDK track screens upon navigating from one screen to another.

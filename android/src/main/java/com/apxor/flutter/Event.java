@@ -1,6 +1,6 @@
 package com.apxor.flutter;
 
-import static com.apxor.androidsdk.core.Constants.CLIENT_EVENTS;
+import static com.apxor.androidsdk.core.Constants.INTERNAL_EVENTS;
 
 import com.apxor.androidsdk.core.models.BaseApxorEvent;
 
@@ -22,7 +22,7 @@ public final class Event extends BaseApxorEvent {
 
     @Override
     public String getEventType() {
-        return CLIENT_EVENTS;
+        return INTERNAL_EVENTS;
     }
 
     @Override
