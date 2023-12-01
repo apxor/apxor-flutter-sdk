@@ -108,6 +108,8 @@ class ApxorFlutter {
     removeAll();
   }
 
+  static void setContext(String name, BuildContext context) {}
+
   static Future<String?> getDeviceId() async {
     String? id = ApxorFlutter.getClientId();
     return Future(() => id);
