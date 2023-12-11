@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'apxor_flutter'
-  s.version          = '1.0.6'
+  s.version          = '1.0.7'
   s.summary          = 'Apxor Flutter plugin.'
   s.description      = <<-DESC
 Apxor Flutter plugin project.
@@ -28,5 +28,5 @@ Apxor Flutter plugin project.
   s.dependency 'Apxor-CE', '~> 1.05.03'
   s.dependency 'Apxor-RTA', '~> 1.08.82'
   s.dependency 'Apxor-WYSIWYG', '~> 1.02.52'
-  s.dependency 'Apxor-Survey', '~> 1.03.91'
+  s.dependency 'Apxor-Survey', '~> 1.04.01'
 end

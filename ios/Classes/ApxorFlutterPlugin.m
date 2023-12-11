@@ -60,6 +60,15 @@ static FlutterBasicMessageChannel *command_channel = nil;
         }
         [ApxorSDK logClientEventWithName:[call.arguments valueForKey:@"name"] info:info];
         result(nil);
+    }  else if ([@"logInternalEvent" isEqualToString:call.method]) {
+        NSDictionary *info;
+        if ([call.arguments valueForKey:@"attrs"] != [NSNull null]) {
+            info = [call.arguments valueForKey:@"attrs"];
+        } else {
+            info = nil;
+        }
+        [[APXController sharedController] logInternalEventWithName:[call.arguments valueForKey:@"name"] info:info];
+        result(nil);
     } else if ([@"setUserIdentifier" isEqualToString:call.method]) {
         [ApxorSDK setUserIdentifier: [call.arguments valueForKey:@"userId"]];
         result(nil);
