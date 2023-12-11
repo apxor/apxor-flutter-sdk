@@ -34,6 +34,8 @@ class ApxorFlutter {
 
   static double density = 1;
 
+  static String _currentScreenName = "";
+
   static const String ApxorWebViewJSInterface = """
     window.Apxor = {};
     window.Apxor.logActionEvent = function(a,b,c) {ApxorFlutter.postMessage(JSON.stringify({"method":"ActionEvent","eventName":a,"attributes":{"id":b,"message_name":c}})) };
@@ -88,6 +90,7 @@ class ApxorFlutter {
   }
 
   static var _ctx;
+  static Map<String, BuildContext> _contexts = {};
   static final captureKey = GlobalKey();
 
   static bool _init() {
@@ -289,12 +292,17 @@ class ApxorFlutter {
 
   static void trackScreen(String name, BuildContext context) {
     _ctx = context;
+    _currentScreenName = name;
     _ensureInitialized();
     if (!_isValidString(name)) {
       print('Error: `name` cannot be null or empty in `trackScreen`');
       return;
     }
     _channel.invokeMethod('trackScreen', <String, String>{'name': name});
+  }
+
+  static void setContext(String name, BuildContext context) {
+    _contexts[name] = context;
   }
 
   static void setCurrentScreenName(String name) {
@@ -428,7 +436,10 @@ class ApxorFlutter {
   static Future<LT?> _g({bool f = false, String p = "", String js = ""}) async {
     List<LT> lts = <LT>[];
     LT lt = LT();
-    if (_ctx != null) {
+    if (_currentScreenName.isNotEmpty &&
+        _contexts.containsKey(_currentScreenName)) {
+      lt.e = _contexts[_currentScreenName] as Element;
+    } else if (_ctx != null) {
       lt.e = _ctx as Element;
     } else {
       lt.e = WidgetsBinding.instance.rootElement;
@@ -459,8 +470,14 @@ class ApxorFlutter {
           bounds["top"].toDouble(),
           bounds["right"].toDouble(),
           bounds["bottom"].toDouble());
-      node.p = l["path"];
+      node.op = l["path"];
       node.c = List<LT>.empty(growable: true);
+      if(l.containsKey("is_in_wv")) {
+        node.isInWv = l["is_in_wv"];
+      }
+      if(l.containsKey("wv_tag")) {
+        node.wvTag = l["wv_tag"];
+      }
       return node;
     }
 
@@ -529,7 +546,7 @@ class ApxorFlutter {
               if (controller != null) {
                 await controller.runJavaScript(js);
                 String result = await controller.runJavaScriptReturningResult(
-                    "getViews(${ltn.po!.left * density},${ltn.po!.top * density})");
+                    "getViews(${ltn.po!.left * density},${ltn.po!.top * density},\"${ltn.k}\",\"flutter\")");
                 // For Android, runJavaScriptReturningResult returns a json encoded string
                 if (defaultTargetPlatform == TargetPlatform.android) {
                   result = jsonDecode(result);
@@ -550,7 +567,7 @@ class ApxorFlutter {
                 await controller.evaluateJavascript(source: js);
                 String result = await controller.evaluateJavascript(
                     source:
-                        "getViews(${ltn.po!.left * density},${ltn.po!.top * density})");
+                        "getViews(${ltn.po!.left * density},${ltn.po!.top * density},\"${ltn.k}\",\"flutter\")");
                 result = result.replaceAll("'", "\"");
                 LT wn = _wvExtract(result);
                 a.add(wn);
@@ -585,7 +602,9 @@ class ApxorFlutter {
             "${l.length > 1 ? "[$i]" : ""}/${objectRuntimeType(ltn.e?.widget, 'W')}";
         String op = "$s1$r";
         ltn.p = "${ltn.k != null ? ltn.k : s}$r";
-        ltn.op = op;
+        if (!ltn.isWeb) {
+          ltn.op = op;
+        }
         if (isF &&
             (ltn.p.toString() == pstr ||
                 op == pstr ||
@@ -642,6 +661,8 @@ class LT {
   String? k;
   bool isWeb = false;
   String? webElement;
+  String? wvTag = "";
+  bool isInWv = false;
   late List<LT> c;
 
   LT();
@@ -672,7 +693,12 @@ class LT {
       k2: op != null && op!.isNotEmpty ? op : '',
       k3: e != null ? objectRuntimeType(e?.widget, 'W') : webElement,
       k4: {k6: t, k7: b, k8: l, k9: r},
-      k5: a
+      k5: a,
+      "additional_info": {
+        "sdk_variant": "flutter",
+      },
+      'is_in_wv': isInWv,
+      'wv_tag': wvTag,
     };
   }
 
