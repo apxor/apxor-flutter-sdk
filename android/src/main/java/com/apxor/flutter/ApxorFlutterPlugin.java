@@ -93,6 +93,8 @@ public class ApxorFlutterPlugin implements FlutterPlugin, MethodCallHandler, Eve
             eName = "f";
           } else if (name.equals("apx_iwv")){
             eName = "iwv";
+          } else if (name.equals("apx_avf")) {
+            eName = "avf";
           }
 
           if (eName != null) {
@@ -171,6 +173,8 @@ public class ApxorFlutterPlugin implements FlutterPlugin, MethodCallHandler, Eve
           handleGS(call, result);
         } else if (call.method.equals(FUS)) {
           handleFUS(call, result);
+        } else if (call.method.equals("avf")) {
+          handleAVF(call, result);
         } else {
           result.error("Apxor", "Unknown method " + call.method, null);
         }
@@ -197,10 +201,15 @@ public class ApxorFlutterPlugin implements FlutterPlugin, MethodCallHandler, Eve
         case "d":
           try{
             map.put("d", data.getDouble("d"));
-            map.put("js",data.getString("js"));
+            map.put("js",data.optString("js"));
+            map.put("root_element", data.optString("root_element"));
           } catch (Exception e){
             
           }
+          break;
+        case "avf":
+          map.put("d",data.getDouble("d"));
+          map.put("root_element", data.optString("root_element"));
           break;
         case "f":
         case "gt":
@@ -214,6 +223,7 @@ public class ApxorFlutterPlugin implements FlutterPlugin, MethodCallHandler, Eve
             map.put("uuid", data.getString("uuid"));
             map.put("configName", data.getString("configName"));
             map.put("js",data.getString("js"));
+            map.put("root_element", data.optString("root_element"));
           } catch (Exception e){
                 
             }
@@ -365,6 +375,21 @@ public class ApxorFlutterPlugin implements FlutterPlugin, MethodCallHandler, Eve
         r.put("r", data);
       }
       SDKController.getInstance().dispatchEvent(new Event("f_" + time, r));
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    result.success(null);
+  }
+
+  private void handleAVF(MethodCall call, Result result) {
+    try {
+      Map<String, Integer> data = call.argument("r");
+      JSONObject r = new JSONObject();
+      Long time = call.<Long>argument("t");
+      if (data != null) {
+        r.put("r", data);
+      }
+      SDKController.getInstance().dispatchEvent(new Event("avf_" + time, r));
     } catch (Exception e) {
       e.printStackTrace();
     }

@@ -54,7 +54,7 @@ class ApxNavigationObserver extends NavigatorObserver {
     if (route != null && route is PageRoute) {
       String? name = nameExtractor(route);
       if (name != null && route.navigator?.context != null) {
-        ApxorFlutter.trackScreen(name, route.navigator!.context);
+        ApxorFlutter.internalTrackScreen(name, route.navigator!.context, true);
       }
     }
   }
