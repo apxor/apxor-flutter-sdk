@@ -265,7 +265,7 @@ public class ApxorFlutterPlugin implements FlutterPlugin, MethodCallHandler, Eve
           ApxorSDK.setSessionCustomInfo(attributes);
           break;
         case "Internal":
-          SDKController.getInstance().logInternalEvent(eventName, attributes);
+          SDKController.getInstance().logInternalEvent(eventName, attributes, null);
           break;
         default:
           break;
