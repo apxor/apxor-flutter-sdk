@@ -25,7 +25,7 @@ var k8 = x([0x6c, 0x65, 0x66, 0x74]);
 var k9 = x([0x72, 0x69, 0x67, 0x68, 0x74]);
 
 class ApxorFlutter {
-  static const MethodChannel _channel =
+  static const MethodChannel apxorMethodChannel =
       MethodChannel('plugins.flutter.io/apxor_flutter');
 
   static bool _isInitialized = false;
@@ -54,8 +54,8 @@ class ApxorFlutter {
     window.Apxor.updateCount = function(a) {window.flutter_inappwebview.callHandler('ApxorFlutter',JSON.stringify({"method":"UpdateCount","uuid":a}))};
     window.Apxor.redirectTo  = function(a,b,c,d) {window.flutter_inappwebview.callHandler('ApxorFlutter',JSON.stringify({"method":"RedirectTo","uuid":a,"configName":b,"buttonName":c,"actionConfig":d}))};
     """;
-  static Map<String, dynamic> _webViewControllers = {};
-  static Map<String, dynamic> _inappWebViewContollers = {};
+  static final Map<String, dynamic> _webViewControllers = {};
+  static final Map<String, dynamic> _inappWebViewContollers = {};
 
   static void apxorJsMessageHandler(String message) {
     var data = jsonDecode(message);
@@ -89,24 +89,23 @@ class ApxorFlutter {
     }
   }
 
-  static var _ctx;
-  static Map<String, BuildContext> _contexts = {};
+  static BuildContext? _ctx;
+  static final Map<String, BuildContext> _contexts = {};
   static final captureKey = GlobalKey();
 
   static bool _init() {
-    BasicMessageChannel<dynamic> channel = BasicMessageChannel(
+    BasicMessageChannel<dynamic> channel = const BasicMessageChannel(
         "plugins.flutter.io/apxor_commands", JSONMessageCodec());
     channel.setMessageHandler((message) async {
       String name = message["name"];
       switch (name) {
         case "d":
           {
-            String js = '';
-            if (message["js"] != null) {
-              js = message["js"];
-            }
-            dynamic d = await _d1((message["d"] as num).toDouble(), js: js);
-            _channel.invokeMethod("dr", <String, dynamic>{
+            String js = message["js"] ?? '';
+            String rootElement = message["root_element"] ?? "";
+            dynamic d = await _d1((message["d"] as num).toDouble(),
+                js: js, rootElement: rootElement);
+            apxorMethodChannel.invokeMethod("dr", <String, dynamic>{
               'r': d,
               't': message["t"],
             });
@@ -114,35 +113,40 @@ class ApxorFlutter {
           }
         case "f":
           {
-            String? p = message["p"];
-            if (_isValidString(p)) {
-              List l = await _f(p!);
-              _channel.invokeMethod("fr", <String, dynamic>{
-                't': message["t"],
-                'r': {
-                  't': l[0],
-                  'l': l[1],
-                  'r': l[2],
-                  'b': l[3],
-                }
-              });
-            } else {
-              print("Error: Invalid string in f");
+            int t = message["t"];
+            String p = message["p"];
+            String rootElement = message["root_element"] ?? "";
+            LT? layout = await _g(f: true, rootElement: rootElement);
+            if (layout != null) {
+              LT? target = findView([layout], p);
+              if (target != null && target.po != null) {
+                apxorMethodChannel.invokeMethod("fr", <String, dynamic>{
+                  'r': {
+                    't': target.po!.top,
+                    'l': target.po!.left,
+                    'b': target.po!.bottom,
+                    'r': target.po!.right,
+                  },
+                  't': message["t"],
+                });
+              }
             }
+            apxorMethodChannel.invokeMethod("fr", <String, dynamic>{
+              'r': {"t": 0, "l": 0, "b": 0, "r": 0},
+              't': message["t"],
+            });
             break;
           }
-        case "gt":
+        case "avf":
           {
-            String? p = message["p"];
-            if (_isValidString(p)) {
-              String? t = await _gt(p!);
-              _channel.invokeMethod("gtr", <String, dynamic>{
-                'r': {'st': t != null, 't': t ?? null},
-                't': message["t"],
-              });
-            } else {
-              print("Error: Invalid string in gt");
-            }
+            int t = message["t"];
+            double d = (message["d"] as num).toDouble();
+            String rootElement = message["root_element"] ?? "";
+            LT? layout = await _g(f: true, rootElement: rootElement);
+            apxorMethodChannel.invokeMethod("avf", <String, dynamic>{
+              'r': layout?.toJ(d),
+              't': message["t"],
+            });
             break;
           }
         case "redirect":
@@ -167,28 +171,26 @@ class ApxorFlutter {
             int msgDuration = message["msgDuration"];
             String? uuid = message["uuid"];
             String? configName = message["configName"];
-            String? params = "'$uiJson',$msgDuration,'$uuid','$configName'";
+            String rootElement = message["root_element"] ?? "";
+            String? params = "`$uiJson`,$msgDuration,`$uuid`,`$configName`";
             if (_isValidString(p)) {
-              LT? t = await _g(f: true, p: p!);
-
-              if (t != null) {
-                if (_webViewControllers[p] != null) {
-                  await _webViewControllers[p]!
-                      .runJavaScript("(function() {$js}())");
-                  print("Apxor Web RTM is loaded");
-                  await _webViewControllers[p].runJavaScript(
-                      "javascript:window.ApxorRTM&&window.ApxorRTM.show($params);");
-                } else if (_inappWebViewContollers[p] != null) {
-                  await _inappWebViewContollers[p]
-                      .evaluateJavascript(source: "(function() {$js}())");
-                  print("Apxor Web RTM is loaded");
-                  await _inappWebViewContollers[p].evaluateJavascript(
-                      source:
-                          "javascript:window.ApxorRTM&&window.ApxorRTM.show($params);");
-                }
+              if (_webViewControllers[p] != null) {
+                await _webViewControllers[p]!
+                    .runJavaScript("(function() {$js}())");
+                print("Apxor Web RTM is loaded");
+                await _webViewControllers[p].runJavaScript(
+                    "javascript:window.ApxorRTM&&window.ApxorRTM.show($params);");
+              } else if (_inappWebViewContollers[p] != null) {
+                await _inappWebViewContollers[p]
+                    .evaluateJavascript(source: "(function() {$js}())");
+                print("Apxor Web RTM is loaded");
+                await _inappWebViewContollers[p].evaluateJavascript(
+                    source:
+                        "javascript:window.ApxorRTM&&window.ApxorRTM.show($params);");
               }
             }
           }
+          break;
       }
     });
     print("Apxor FlutterSDK initialized");
@@ -227,7 +229,7 @@ class ApxorFlutter {
       {Map<String, dynamic>? attributes}) {
     _ensureInitialized();
     if (_isValidString(eventName)) {
-      _channel.invokeMethod('logAppEvent',
+      apxorMethodChannel.invokeMethod('logAppEvent',
           <String, dynamic>{'name': eventName, 'attrs': attributes});
     } else {
       print('Error: `eventName` cannot be null or empty for logAppEvent');
@@ -238,7 +240,7 @@ class ApxorFlutter {
       {Map<String, dynamic>? attributes}) {
     _ensureInitialized();
     if (_isValidString(eventName)) {
-      _channel.invokeMethod('logClientEvent',
+      apxorMethodChannel.invokeMethod('logClientEvent',
           <String, dynamic>{'name': eventName, 'attrs': attributes});
     } else {
       print('Error: `eventName` cannot be null or empty for logClientEvent');
@@ -249,7 +251,7 @@ class ApxorFlutter {
       {Map<String, dynamic>? attributes}) {
     _ensureInitialized();
     if (_isValidString(eventName)) {
-      _channel.invokeMethod('logInternalEvent',
+      apxorMethodChannel.invokeMethod('logInternalEvent',
           <String, dynamic>{'name': eventName, 'attrs': attributes});
     } else {
       print('Error: `eventName` cannot be null or empty for logInternalEvent');
@@ -258,20 +260,20 @@ class ApxorFlutter {
 
   static void setUserAttributes(Map<String, dynamic> attributes) {
     _ensureInitialized();
-    _channel.invokeMethod(
+    apxorMethodChannel.invokeMethod(
         'setUserAttributes', <String, dynamic>{'attrs': attributes});
   }
 
   static void setSessionAttributes(Map<String, dynamic> attributes) {
     _ensureInitialized();
-    _channel.invokeMethod(
+    apxorMethodChannel.invokeMethod(
         'setSessionAttributes', <String, dynamic>{'attrs': attributes});
   }
 
   static void setUserIdentifier(String customUserId) {
     _ensureInitialized();
     if (_isValidString(customUserId)) {
-      _channel.invokeMethod(
+      apxorMethodChannel.invokeMethod(
           'setUserIdentifier', <String, String>{'userId': customUserId});
     } else {
       print(
@@ -282,7 +284,7 @@ class ApxorFlutter {
   static void setPushRegistrationToken(String token) {
     _ensureInitialized();
     if (_isValidString(token)) {
-      _channel.invokeMethod(
+      apxorMethodChannel.invokeMethod(
           'setPushRegistrationToken', <String, String>{'token': token});
     } else {
       print(
@@ -291,14 +293,23 @@ class ApxorFlutter {
   }
 
   static void trackScreen(String name, BuildContext context) {
-    _ctx = context;
-    _currentScreenName = name;
+    internalTrackScreen(name, context, false);
+  }
+
+  static void internalTrackScreen(
+      String name, BuildContext context, bool usingNavigator) {
     _ensureInitialized();
     if (!_isValidString(name)) {
       print('Error: `name` cannot be null or empty in `trackScreen`');
-      return;
     }
-    _channel.invokeMethod('trackScreen', <String, String>{'name': name});
+    apxorMethodChannel
+        .invokeMethod('trackScreen', <String, String>{'name': name});
+    if (usingNavigator) {
+      _ctx = context;
+    } else {
+      _contexts[name] = context;
+    }
+    _currentScreenName = name;
   }
 
   static void setContext(String name, BuildContext context) {
@@ -311,7 +322,7 @@ class ApxorFlutter {
       print('Error: `name` cannot be null or empty in `setCurrentScreenName`');
       return;
     }
-    _channel
+    apxorMethodChannel
         .invokeMethod('setCurrentScreenName', <String, String>{'name': name});
   }
 
@@ -322,12 +333,12 @@ class ApxorFlutter {
 
   static Future<String?> getDeviceId() async {
     _ensureInitialized();
-    return await _channel.invokeMethod('getDeviceId');
+    return await apxorMethodChannel.invokeMethod('getDeviceId');
   }
 
   static Future<dynamic> getAttributes(List<String> attributes) async {
     _ensureInitialized();
-    return await _channel
+    return await apxorMethodChannel
         .invokeMethod('getAttributes', <String, dynamic>{'attrs': attributes});
   }
 
@@ -335,61 +346,44 @@ class ApxorFlutter {
     return str != null && str.isNotEmpty;
   }
 
-  static dynamic _n(String n) {
-    switch (n) {
-      case "0":
-        return WidgetsBinding.instance.renderViewElement;
-      case "1":
-        return WidgetsBinding.instance.focusManager;
-      case "2":
-        return WidgetsFlutterBinding.ensureInitialized();
-      case "3":
-        return RendererBinding.instance.pipelineOwner;
-      default:
-        return SemanticsBinding.instance.window;
-    }
-  }
-
   static void setTabController(TabController controller) {
     controller.addListener(() {
       if (controller.previousIndex != controller.index) {
-        _channel.invokeMethod('rm');
+        apxorMethodChannel.invokeMethod('rm');
       }
     });
   }
 
-  static Future<String?> _gt(String p) async {
-    try {
-      LT? t = await _g(f: true, p: p);
-      if (t != null) {
-        if (t.e?.widget is Text) {
-          return (t.e?.widget as Text).data;
-        } else if (t.e?.widget is RichText) {
-          return (t.e?.widget as RichText).text.toPlainText();
-        }
-      }
-    } catch (e) {
-      print("Error: ${e.toString()}");
+  static String? getText(Widget? w) {
+    if (w == null) {
+      return null;
+    }
+    if (w is Text) {
+      return w.data;
+    } else if (w is RichText) {
+      return w.text.toPlainText();
+    } else if (w is ElevatedButton) {
+      return getText(w.child);
+    } else if (w is IconButton) {
+      return getText(w.icon);
+    } else if (w is TextButton) {
+      return getText(w.child);
+    } else if (w is OutlinedButton) {
+      return getText(w.child);
+    } else if (w is FloatingActionButton) {
+      return getText(w.child);
+    } else if (w is DropdownButton) {
+      return w.value?.toString();
+    } else if (w is DropdownMenuItem) {
+      return getText(w.child);
+    } else if (w is Icon) {
+      return w.icon?.codePoint.toString();
+    } else if (w is Image) {
+      return w.image.toString();
+    } else if (w is TextField) {
+      return w.decoration?.labelText;
     }
     return null;
-  }
-
-  static Future<List> _f(String p) async {
-    try {
-      LT? t = await _g(f: true, p: p);
-      if (t != null && t.po != null) {
-        Rect r = t.po!;
-        return [
-          r.top.toInt(),
-          r.left.toInt(),
-          r.right.toInt(),
-          r.bottom.toInt()
-        ];
-      }
-    } catch (e) {
-      print("Error:: ${e.toString()}");
-    }
-    return [0, 0, 0, 0];
   }
 
   static bool _isV(Widget w) {
@@ -404,10 +398,11 @@ class ApxorFlutter {
     return v;
   }
 
-  static Future<Map<String, dynamic>> _d1(double d, {String js = ""}) async {
+  static Future<Map<String, dynamic>> _d1(double d,
+      {String js = "", String, String rootElement = ''}) async {
     try {
       density = d;
-      LT? r = await _g(js: js);
+      LT? r = await _g(js: js, f: false, rootElement: rootElement);
       if (r != null) {
         var findRenderObject = captureKey.currentContext?.findRenderObject();
         if (findRenderObject != null) {
@@ -425,7 +420,11 @@ class ApxorFlutter {
 
           Uint8List? pngBytes = byteData?.buffer.asUint8List();
           return {"l": r.toJ(d), "s": base64.encode(pngBytes as List<int>)};
+        } else {
+          print("app is not wrapped with apxor widget");
         }
+      } else {
+        print("layout is null in layout extracton");
       }
     } catch (e) {
       print("Error::: ${e.toString()}");
@@ -433,36 +432,50 @@ class ApxorFlutter {
     return {};
   }
 
-  static Future<LT?> _g({bool f = false, String p = "", String js = ""}) async {
-    List<LT> lts = <LT>[];
-    LT lt = LT();
-    if (_currentScreenName.isNotEmpty &&
-        _contexts.containsKey(_currentScreenName)) {
-      lt.e = _contexts[_currentScreenName] as Element;
-    } else if (_ctx != null) {
-      lt.e = _ctx as Element;
-    } else {
-      lt.e = WidgetsBinding.instance.rootElement;
+  static Future<LT?> _g(
+      {bool f = false, String js = "", String rootElement = ""}) async {
+    List<Element?> elements = <Element?>[];
+    String extractedUsing = "";
+
+    Element? getRootElement(String rootElement) {
+      if ((rootElement.isEmpty || rootElement == 'context') &&
+          _currentScreenName.isNotEmpty &&
+          _contexts.containsKey(_currentScreenName)) {
+        extractedUsing = "context";
+        return _contexts[_currentScreenName] as Element;
+      } else if ((rootElement.isEmpty || rootElement == 'navigator') &&
+          _ctx != null) {
+        extractedUsing = "navigator";
+        return _ctx as Element;
+      } else {
+        extractedUsing = "root";
+        return WidgetsBinding.instance.rootElement;
+      }
     }
+
+    Element? e = getRootElement(rootElement);
+    elements.add(e);
+    LT lt = LT();
+    lt.extractedUsing = extractedUsing;
     lt.c = <LT>[];
-    lts.add(lt);
-    void _attel(LT n) {
-      var element = n.e;
+    void _attel(LT n, Element? element) {
       if (element?.widget.key is ValueKey) {
-        var key = element?.widget.key as ValueKey;
-        n.k = key.value
-            .toString()
-            .replaceFirst("[<'", "")
-            .replaceFirst("'>]", "")
-            .replaceFirst("[<", "")
-            .replaceFirst(">]", "");
+        var valueKey = element?.widget.key as ValueKey;
+        String key = valueKey.value.toString();
+        if (!key.startsWith("_")) {
+          n.k = key
+              .replaceFirst("[<'", "")
+              .replaceFirst("'>]", "")
+              .replaceFirst("[<", "")
+              .replaceFirst(">]", "");
+        }
       }
     }
 
     LT createLTFromMap(Map<String, dynamic> l) {
       LT node = LT();
       node.isWeb = true;
-      node.webElement = l["view"];
+      node.type = l["view"];
       node.k = l["id"];
       var bounds = l["bounds"];
       node.po = Rect.fromLTRB(
@@ -472,10 +485,10 @@ class ApxorFlutter {
           bounds["bottom"].toDouble());
       node.op = l["path"];
       node.c = List<LT>.empty(growable: true);
-      if(l.containsKey("is_in_wv")) {
+      if (l.containsKey("is_in_wv")) {
         node.isInWv = l["is_in_wv"];
       }
-      if(l.containsKey("wv_tag")) {
+      if (l.containsKey("wv_tag")) {
         node.wvTag = l["wv_tag"];
       }
       return node;
@@ -497,53 +510,65 @@ class ApxorFlutter {
       return parent;
     }
 
-    Future<void> _v(List<LT> ltList) async {
+    Future<void> _v(List<Element?> elements, LT parent, String parentType,
+        LT? closestParent, String extractedUsing) async {
       var i = 0;
-      while (i < ltList.length) {
-        LT ltn = ltList[i];
-        RenderObject? obj = ltn.e?.findRenderObject();
+      while (i < elements.length) {
+        Element? e = elements[i];
+        LT ltn = LT();
+        parent.c.add(ltn);
+        ltn.parent = parent;
+        ltn.type = e?.widget.runtimeType.toString() ?? "W";
+        RenderObject? obj = e?.findRenderObject();
         if (obj != null && obj is RenderBox) {
-          RenderBox b = ltn.e?.findRenderObject() as RenderBox;
+          RenderBox b = e?.findRenderObject() as RenderBox;
           if (!b.hasSize) {
             print("Error: No size for $b");
-            return null;
+            return;
           }
           Offset o;
-          final s = ltn.e?.findAncestorStateOfType<NavigatorState>();
+          final s = e?.findAncestorStateOfType<NavigatorState>();
           if (s != null) {
             o = b.localToGlobal(Offset.zero,
                 ancestor: s.context.findRenderObject());
           } else {
             o = b.localToGlobal(Offset.zero);
           }
-          ltn.po = Rect.fromLTRB(
-              o.dx, o.dy, o.dx + b.size.width, o.dy + b.size.height);
+          ltn.po = Rect.fromLTRB((o.dx < 0) ? 0 : o.dx, (o.dy < 0) ? 0 : o.dy,
+              o.dx + b.size.width, o.dy + b.size.height);
         }
-        List<LT> a = <LT>[];
-        _attel(ltn);
+        List<Element> a = <Element>[];
+        _attel(ltn, e);
 
-        if (!(ltn.e?.widget is ElevatedButton ||
-            ltn.e?.widget is IconButton ||
-            ltn.e?.widget is TextButton ||
-            ltn.e?.widget is OutlinedButton ||
-            ltn.e?.widget is FloatingActionButton ||
-            ltn.e?.widget is DropdownButton ||
-            ltn.e?.widget is DropdownMenuItem ||
-            ltn.e?.widget is Text ||
-            ltn.e?.widget is RichText ||
-            ltn.e?.widget is Icon ||
-            ltn.e?.widget is Image ||
-            ltn.e?.widget is TextField ||
-            ltn.e?.widget is TextFormField ||
-            ltn.e?.widget is Checkbox ||
-            ltn.e?.widget is Radio ||
-            ltn.e?.widget is Switch ||
-            ltn.e?.widget is Slider ||
-            ltn.e?.widget is RangeSlider)) {
+        ltn.parentType = parentType;
+        ltn.extractedUsing = extractedUsing;
+        ltn.closestParent = closestParent;
+        Widget? w = e?.widget;
+        ltn.content = getText(w);
+        if (!(w is ElevatedButton ||
+            w is IconButton ||
+            w is TextButton ||
+            w is OutlinedButton ||
+            w is FloatingActionButton ||
+            w is DropdownButton ||
+            w is DropdownMenuItem ||
+            w is Text ||
+            w is RichText ||
+            w is Icon ||
+            w is Image ||
+            w is TextField ||
+            w is TextFormField ||
+            w is Checkbox ||
+            w is Radio ||
+            w is Switch ||
+            w is Slider ||
+            w is RangeSlider)) {
           if (_webViewControllers.containsKey(ltn.k) && !f && js.isNotEmpty) {
             try {
               var controller = _webViewControllers[ltn.k];
               if (controller != null) {
+                print(
+                    "getViews(${ltn.po!.left * density},${ltn.po!.top * density},\"${ltn.k}\",\"flutter\")");
                 await controller.runJavaScript(js);
                 String result = await controller.runJavaScriptReturningResult(
                     "getViews(${ltn.po!.left * density},${ltn.po!.top * density},\"${ltn.k}\",\"flutter\")");
@@ -553,7 +578,7 @@ class ApxorFlutter {
                 }
                 result = result.replaceAll("'", "\"");
                 LT wn = _wvExtract(result);
-                a.add(wn);
+                parent.c.add(wn);
               }
             } catch (e) {
               print("Error: ${e.toString()}");
@@ -565,75 +590,70 @@ class ApxorFlutter {
               var controller = _inappWebViewContollers[ltn.k];
               if (controller != null) {
                 await controller.evaluateJavascript(source: js);
+                print(
+                    "getViews(${ltn.po!.left * density},${ltn.po!.top * density},\"${ltn.k}\",\"flutter\")");
                 String result = await controller.evaluateJavascript(
                     source:
                         "getViews(${ltn.po!.left * density},${ltn.po!.top * density},\"${ltn.k}\",\"flutter\")");
                 result = result.replaceAll("'", "\"");
                 LT wn = _wvExtract(result);
-                a.add(wn);
+                parent.c.add(wn);
               }
             } catch (e) {
               print("Error: ${e.toString()}");
             }
           } else {
-            ltn.e?.visitChildElements((element) {
+            if (ltn.k != null && ltn.k!.isNotEmpty && !ltn.k!.startsWith("_")) {
+              closestParent = ltn;
+            }
+            e?.visitChildElements((element) {
               LT tmp = LT();
-              tmp.e = element;
-              if (_isV(element.widget)) {
-                a.add(tmp);
+              if (element.mounted && _isV(element.widget)) {
+                tmp.parent = ltn;
+                a.add(element);
               }
             });
-            await _v(a);
+            if (e?.widget is AppBar) {
+              await _v(a, ltn, "AppBar", closestParent, extractedUsing);
+            } else if (e?.widget is ListView) {
+              await _v(a, ltn, "ListView", closestParent, extractedUsing);
+            } else if (e?.widget is GridView) {
+              await _v(a, ltn, "GridView", closestParent, extractedUsing);
+            } else if (e?.widget is BottomNavigationBar) {
+              await _v(
+                  a, ltn, "BottomNavigationBar", closestParent, extractedUsing);
+            } else {
+              await _v(a, ltn, parentType, closestParent, extractedUsing);
+            }
           }
         }
-        ltn.c = a;
         i++;
       }
     }
 
-    await _v(lts);
-
-    LT? _crtLt(List<LT> l, String s, String s1,
-        {bool isF = false, String pstr = ""}) {
-      var i = 0;
-      while (i < l.length) {
-        LT ltn = l[i];
-        String r =
-            "${l.length > 1 ? "[$i]" : ""}/${objectRuntimeType(ltn.e?.widget, 'W')}";
-        String op = "$s1$r";
-        ltn.p = "${ltn.k != null ? ltn.k : s}$r";
-        if (!ltn.isWeb) {
-          ltn.op = op;
-        }
-        if (isF &&
-            (ltn.p.toString() == pstr ||
-                op == pstr ||
-                (ltn.k != null && ltn.k == pstr))) {
-          return ltn;
-        }
-        LT? t = _crtLt(ltn.c, ltn.p.toString(), op, isF: isF, pstr: pstr);
-        if (isF && t != null) {
-          return t;
-        }
-        i++;
-      }
-      return null;
-    }
+    await _v(elements, lt, "", null, extractedUsing);
 
     LT _x(LT l, LT? pr) {
       var i = 0;
-      if (l.k == null &&
-          (l.e.runtimeType.toString().startsWith("_") || l.po == pr?.po)) {
+      if (l.k == null && (l.type.startsWith("_") || l.po == pr?.po)) {
         if (pr != null) {
           try {
             i = pr.c.indexOf(l);
             if (i != -1) {
+              if (l.content != null &&
+                  l.content!.isNotEmpty &&
+                  (pr.content == null || pr.content!.isEmpty)) {
+                pr.content = l.content;
+              }
               pr.c.removeAt(i);
               pr.c.addAll(l.c);
+              for (LT c in l.c) {
+                c.parent = pr;
+              }
               l = pr;
             }
           } catch (e) {
-            print("${e.toString()}");
+            print(e.toString());
             return pr;
           }
         }
@@ -647,23 +667,61 @@ class ApxorFlutter {
       return l;
     }
 
-    LT xr = _x(lts[0], null);
-    LT? tn = _crtLt([xr], "", "", isF: f, pstr: p);
-    return f ? tn : xr;
+    Future<LT?> _crtLt(List<LT> l, String s, String s1, int level) async {
+      var i = 0;
+      while (i < l.length) {
+        LT? ltn = l[i];
+        ltn.index = i;
+        ltn.level = level;
+        String r = "${l.length > 1 ? "[$i]" : ""}/${ltn.type}";
+        String op = "$s1$r";
+        ltn.p = "${ltn.k ?? s}$r";
+        if (!ltn.isWeb) {
+          ltn.op = op;
+        }
+        await _crtLt(ltn.c, ltn.p.toString(), op, level + 1);
+        i++;
+      }
+      return null;
+    }
+
+    LT xr = _x(lt.c[0], null);
+    await _crtLt([xr], "", "", 0);
+    return xr;
+  }
+
+  static LT? findView(List<LT> layout, String p) {
+    for (LT lt in layout) {
+      if (p == lt.k || p == lt.p || p == lt.op) {
+        return lt;
+      }
+      LT? target = findView(lt.c, p);
+      if (target != null) {
+        return target;
+      }
+    }
+    return null;
   }
 }
 
 class LT {
-  Element? e;
   Rect? po;
   String? p;
   String? op;
   String? k;
   bool isWeb = false;
-  String? webElement;
   String? wvTag = "";
   bool isInWv = false;
-  late List<LT> c;
+  String? content;
+  int index = 0;
+  int level = 0;
+  String type = "";
+  String parentType = "";
+  LT? closestParent;
+  LT? parent;
+  String extractedUsing = "";
+
+  List<LT> c = [];
 
   LT();
 
@@ -691,11 +749,28 @@ class LT {
     return {
       k1: k != null && k!.isNotEmpty ? k : '',
       k2: op != null && op!.isNotEmpty ? op : '',
-      k3: e != null ? objectRuntimeType(e?.widget, 'W') : webElement,
+      k3: type,
       k4: {k6: t, k7: b, k8: l, k9: r},
       k5: a,
       "additional_info": {
         "sdk_variant": "flutter",
+        "type": type,
+        "content": content,
+        ...(parentType.isNotEmpty ? {"parent_type": parentType} : {}),
+        "id": k != null && k!.isNotEmpty ? k : '',
+        "path": op != null && op!.isNotEmpty ? op : '',
+        "index": index,
+        "level": level,
+        "relative_path": p != null && p!.isNotEmpty ? p : '',
+        ...(extractedUsing.isNotEmpty ? {"root_element": extractedUsing} : {}),
+        ...(closestParent != null &&
+                closestParent!.k != null &&
+                closestParent!.k!.isNotEmpty
+            ? {"closest_parent_id": closestParent!.k}
+            : {}),
+        ...((parent != null && parent!.k != null && parent!.k!.isNotEmpty)
+            ? {"parent_id": parent!.k}
+            : {})
       },
       'is_in_wv': isInWv,
       'wv_tag': wvTag,
@@ -704,6 +779,6 @@ class LT {
 
   @override
   String toString() {
-    return "${objectRuntimeType(e?.widget, 'W')} - ${c.length}";
+    return "$type - ${c.length}";
   }
 }

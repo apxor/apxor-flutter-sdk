@@ -102,6 +102,11 @@ class ApxorFlutter {
 
   static void setDeeplinkListener(ApxDeeplinkListener callback) {}
   static void trackScreen(String name, BuildContext context) {
+    internalTrackScreen(name, context, false);
+  }
+
+  static void internalTrackScreen(
+      String name, BuildContext context, bool usingNavigator) {
     print("trackscreen $name");
     setCurrentScreenName(name);
     currentScreenName = name;
