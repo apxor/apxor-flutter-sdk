@@ -153,7 +153,6 @@ class ApxorState extends ChangeNotifier {
   }
 }
 
-@JSExport()
 class ApxorWebHelper {
   void disableClick() {
     ApxorFlutter.apxorState.disableClick();
@@ -188,7 +187,7 @@ class ApxorWebHelper {
         "r": {"st": false}
       });
     }
-    List l = _f(pair[1]);
+    List l = _f(p);
     print(l);
     return js2.jsify({
       'r': {
@@ -348,7 +347,8 @@ class ApxorWebHelper {
         String r =
             "${l.length > 1 ? "[$i]" : ""}/${objectRuntimeType(ltn.e.widget, 'W')}";
         String op = "$s1$r";
-        ltn.p = "${ltn.k != null ? ltn.k : s}$r";
+        ltn.p =
+            "${ltn.k != null ? ltn.k : ApxorFlutter.currentScreenName + "__" + s}$r";
         ltn.op = "${ApxorFlutter.currentScreenName}__$op";
         if (isF &&
             (ltn.p.toString() == pstr ||
@@ -466,8 +466,6 @@ class FlutterApxorWeb {
     print("$para1 $para2 $para3 $para4 $para5");
     html.window.localStorage["_apxor_url_param"] = param ?? "";
     ApxorFlutter.setIsFlutter(true);
-    var helper = createDartExport(ApxorWebHelper());
-    ApxorFlutter.registerApxorFlutterHelper(helper);
   }
 }
 

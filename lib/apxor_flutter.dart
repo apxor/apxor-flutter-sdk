@@ -449,7 +449,7 @@ class ApxorFlutter {
         return _ctx as Element;
       } else {
         extractedUsing = "root";
-        return WidgetsBinding.instance.rootElement;
+        return WidgetsBinding.instance.renderViewElement;
       }
     }
 
