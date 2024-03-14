@@ -92,6 +92,7 @@ class ApxorFlutter {
   static BuildContext? _ctx;
   static final Map<String, BuildContext> _contexts = {};
   static final captureKey = GlobalKey();
+  static String extractedUsing = "";
 
   static bool _init() {
     BasicMessageChannel<dynamic> channel = const BasicMessageChannel(
@@ -404,14 +405,20 @@ class ApxorFlutter {
       density = d;
       LT? r = await _g(js: js, f: false, rootElement: rootElement);
       if (r != null) {
+        print("Layout is extracted");
+        print("Taking screenshot");
         var findRenderObject = captureKey.currentContext?.findRenderObject();
         if (findRenderObject != null) {
           RenderRepaintBoundary boundary =
               findRenderObject as RenderRepaintBoundary;
-          BuildContext? context = captureKey.currentContext;
-          var pixelRatio = 1.0;
+          BuildContext? context = getRootElement(rootElement);
+          var pixelRatio = d;
           if (context != null) {
-            pixelRatio = MediaQuery.of(context).devicePixelRatio;
+            try {
+              pixelRatio = MediaQuery.of(context).devicePixelRatio;
+            } catch (e) {
+              print("Error while geetting pixel ratio " + e.toString());
+            }
           }
           ui.Image image = await boundary.toImage(pixelRatio: pixelRatio);
           ByteData? byteData =
@@ -432,26 +439,25 @@ class ApxorFlutter {
     return {};
   }
 
+  static Element? getRootElement(String rootElement) {
+    if ((rootElement.isEmpty || rootElement == 'context') &&
+        _currentScreenName.isNotEmpty &&
+        _contexts.containsKey(_currentScreenName)) {
+      extractedUsing = "context";
+      return _contexts[_currentScreenName] as Element;
+    } else if ((rootElement.isEmpty || rootElement == 'navigator') &&
+        _ctx != null) {
+      extractedUsing = "navigator";
+      return _ctx as Element;
+    } else {
+      extractedUsing = "root";
+      return WidgetsBinding.instance.renderViewElement;
+    }
+  }
+
   static Future<LT?> _g(
       {bool f = false, String js = "", String rootElement = ""}) async {
     List<Element?> elements = <Element?>[];
-    String extractedUsing = "";
-
-    Element? getRootElement(String rootElement) {
-      if ((rootElement.isEmpty || rootElement == 'context') &&
-          _currentScreenName.isNotEmpty &&
-          _contexts.containsKey(_currentScreenName)) {
-        extractedUsing = "context";
-        return _contexts[_currentScreenName] as Element;
-      } else if ((rootElement.isEmpty || rootElement == 'navigator') &&
-          _ctx != null) {
-        extractedUsing = "navigator";
-        return _ctx as Element;
-      } else {
-        extractedUsing = "root";
-        return WidgetsBinding.instance.renderViewElement;
-      }
-    }
 
     Element? e = getRootElement(rootElement);
     elements.add(e);
