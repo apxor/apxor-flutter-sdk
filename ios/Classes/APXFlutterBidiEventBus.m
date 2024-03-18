@@ -36,6 +36,8 @@
         eName = @"d";
     } else if ([name isEqualToString:@"apx_f"]) {
         eName = @"f";
+    } else if ([name isEqualToString:@"apx_avf"]) {
+        eName = @"avf";
     } else if ([name isEqualToString:@"apx_iwv"]) {
         eName = @"iwv";
     }

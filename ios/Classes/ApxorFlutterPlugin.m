@@ -101,6 +101,8 @@ static FlutterBasicMessageChannel *command_channel = nil;
             [[APXController sharedController] logInternalEventWithName:[@"d_" stringByAppendingString:[time stringValue]] info:data];
         } else if ([@"fr" isEqualToString:call.method]) {
             [[APXController sharedController] logInternalEventWithName:[@"f_" stringByAppendingString:[time stringValue]] info:data];
+        } else if ([@"avf" isEqualToString:call.method]) {
+            [[APXController sharedController] logInternalEventWithName:[@"avf_" stringByAppendingString:[time stringValue]] info:data];
         }
     }
 }
@@ -109,7 +111,7 @@ static FlutterBasicMessageChannel *command_channel = nil;
     NSMutableDictionary *data = [[event getAdditionalInfo] mutableCopy];
     NSString *eName = event.identifier;
     [data setValue:eName forKey:@"name"];
-    if ([eName isEqualToString:@"d"] || [eName isEqualToString:@"f"] || [eName isEqualToString:@"iwv"]) {
+    if ([eName isEqualToString:@"d"] || [eName isEqualToString:@"f"] || [eName isEqualToString:@"iwv"] || [eName isEqualToString:@"avf"]) {
         dispatch_async(dispatch_get_main_queue(), ^{
             [command_channel sendMessage:data];
         });
