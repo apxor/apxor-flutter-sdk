@@ -11,17 +11,22 @@
 #import "ApxorSDK/APXController.h"
 #import "ApxorSDK/APXBidiDelegate.h"
 #import "APXFlutterBidiEventBus.h"
+#import "APXECFactory.h"
 
 static FlutterBasicMessageChannel *command_channel = nil;
+static FlutterBasicMessageChannel *card_channel = nil;
+static NSObject<FlutterPluginRegistrar>* registar = nil;
 
-@implementation ApxorFlutterPlugin
+@implementation ApxorFlutterPlugin {
+    id<APXBidiDelegate> bus;
+}
 
 - (instancetype)init {
     self = [super init];
     if (self) {
         [[APXController sharedController] registerForEventWithType:APXEventTypeInternal listener:self];
         [[APXController sharedController] markAsFlutter];
-        id<APXBidiDelegate> bus = [[APXFlutterBidiEventBus alloc] init];
+        bus = [[APXFlutterBidiEventBus alloc] init];
         [[APXController sharedController] registerForBidiEventsBus:bus WithKey:@"APXOR_FLUTTER_W"];
     }
     return self;
@@ -33,8 +38,12 @@ static FlutterBasicMessageChannel *command_channel = nil;
     FlutterMethodChannel* channel = [FlutterMethodChannel
       methodChannelWithName:@"plugins.flutter.io/apxor_flutter"
             binaryMessenger:[registrar messenger]];
+    APXECFactory *factory = [[APXECFactory alloc] initWithMessenger:registrar.messenger];
+    [registrar registerViewFactory:factory withId:@"com.apxor.flutter/apxor_embeddedCard"];
     ApxorFlutterPlugin* instance = [[ApxorFlutterPlugin alloc] init];
     [registrar addMethodCallDelegate:instance channel:channel];
+    
+    registar = registrar;
     
     // basic message channel for communication between ApxorSDK and flutter
     command_channel = [FlutterBasicMessageChannel messageChannelWithName:@"plugins.flutter.io/apxor_commands" binaryMessenger:[registrar messenger] codec:[FlutterJSONMessageCodec sharedInstance]];
@@ -92,6 +101,8 @@ static FlutterBasicMessageChannel *command_channel = nil;
         }
     } else if ([@"gfn" isEqualToString:call.method]) {
         result(@(0));
+    } else if ([@"getDimensions" isEqualToString:call.method]){
+        result(@{@"height": @200});
     } else {
         NSArray *layout = [call.arguments valueForKey:@"r"];
         NSNumber *time = [call.arguments valueForKey:@"t"];
@@ -106,7 +117,6 @@ static FlutterBasicMessageChannel *command_channel = nil;
         }
     }
 }
-
 - (void)onEvent:(APXEvent *)event {
     NSMutableDictionary *data = [[event getAdditionalInfo] mutableCopy];
     NSString *eName = event.identifier;
@@ -122,6 +132,12 @@ static FlutterBasicMessageChannel *command_channel = nil;
         [eData setValue:@"redirect" forKey:@"name"];
         dispatch_async(dispatch_get_main_queue(), ^{
             [command_channel sendMessage:eData];
+        });
+    } else if ([eName isEqualToString:@"EC"]) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            card_channel = [FlutterBasicMessageChannel messageChannelWithName:[NSString stringWithFormat:@"plugins.flutter.io/embeddedView%@",[data valueForKey:@"id"]] binaryMessenger:[registar messenger]
+            codec:[FlutterJSONMessageCodec sharedInstance]];
+            [card_channel sendMessage:data];
         });
     }
 }

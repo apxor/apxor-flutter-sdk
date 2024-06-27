@@ -474,6 +474,9 @@ class ApxorFlutter {
               .replaceFirst("'>]", "")
               .replaceFirst("[<", "")
               .replaceFirst(">]", "");
+          if (key.startsWith("apx_card_")) {
+            n.isApxorWidget = true;
+          }
         }
       }
     }
@@ -726,6 +729,7 @@ class LT {
   LT? closestParent;
   LT? parent;
   String extractedUsing = "";
+  bool isApxorWidget = false;
 
   List<LT> c = [];
 
@@ -752,6 +756,12 @@ class LT {
       r = z.isNaN || z.isInfinite ? 0 : z.toInt();
     }
 
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
+      var pos = k?.lastIndexOf('_');
+      String? result = (pos != -1) ? k?.substring(pos! + 1) : k;
+      k = result;
+    }
+
     return {
       k1: k != null && k!.isNotEmpty ? k : '',
       k2: op != null && op!.isNotEmpty ? op : '',
@@ -776,7 +786,8 @@ class LT {
             : {}),
         ...((parent != null && parent!.k != null && parent!.k!.isNotEmpty)
             ? {"parent_id": parent!.k}
-            : {})
+            : {}),
+        "is_embed_card_arena": isApxorWidget
       },
       'is_in_wv': isInWv,
       'wv_tag': wvTag,

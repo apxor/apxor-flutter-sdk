@@ -56,11 +56,12 @@ public class ApxorFlutterPlugin implements FlutterPlugin, MethodCallHandler, Eve
     channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "plugins.flutter.io/apxor_flutter");
     channel.setMethodCallHandler(this);
     commandChannel = new BasicMessageChannel<>(
-        flutterPluginBinding.getBinaryMessenger(),
-        "plugins.flutter.io/apxor_commands",
-        JSONMessageCodec.INSTANCE);
+            flutterPluginBinding.getBinaryMessenger(),
+            "plugins.flutter.io/apxor_commands",
+            JSONMessageCodec.INSTANCE
+    );
+    registerEmbedView(flutterPluginBinding);
     registerStoryView(flutterPluginBinding);
-
     SDKController controller = SDKController.getInstance();
     controller.markAsFlutter();
     controller.registerToEvent(INTERNAL_EVENTS, this);
@@ -124,6 +125,13 @@ public class ApxorFlutterPlugin implements FlutterPlugin, MethodCallHandler, Eve
     channel.setMethodCallHandler(null);
     SDKController.getInstance().deregisterFromEvent(INTERNAL_EVENTS, this);
     SDKController.getInstance().setIsFlutter(false);
+  }
+
+  private void registerEmbedView(@NonNull FlutterPluginBinding flutterPluginBinding) {
+        flutterPluginBinding
+        .getPlatformViewRegistry()
+        .registerViewFactory("com.apxor.flutter/ApxorEmbedView", new ApxorEmbedViewFactory(
+                flutterPluginBinding.getBinaryMessenger()));
   }
 
   @Override
