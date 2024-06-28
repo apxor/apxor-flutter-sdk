@@ -176,6 +176,7 @@ class ApxorStoryWidgetState extends State<ApxorStoryWidget>
   @override
   void dispose() {
     debugPrint("Apxor: Dispose called for $id");
+    _widgetDimensions.clear();
     super.dispose();
   }
 }
