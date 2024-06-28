@@ -41,8 +41,8 @@ static NSObject<FlutterPluginRegistrar>* registar = nil;
             binaryMessenger:[registrar messenger]];
     APXECFactory *factory = [[APXECFactory alloc] initWithMessenger:registrar.messenger];
     [registrar registerViewFactory:factory withId:@"com.apxor.flutter/apxor_embeddedCard"];
-     APXStoryFactory *factory = [[APXStoryFactory alloc] initWithMessenger:registrar.messenger];
-    [registrar registerViewFactory:factory withId:@"com.apxor.flutter/apxor_stories"];
+     APXStoryFactory *storyfactory = [[APXStoryFactory alloc] initWithMessenger:registrar.messenger];
+    [registrar registerViewFactory:storyfactory withId:@"com.apxor.flutter/apxor_stories"];
     ApxorFlutterPlugin* instance = [[ApxorFlutterPlugin alloc] init];
     [registrar addMethodCallDelegate:instance channel:channel];
     
