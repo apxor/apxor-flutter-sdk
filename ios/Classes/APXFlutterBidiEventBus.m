@@ -45,6 +45,8 @@ static NSObject<FlutterBinaryMessenger> *messenger = nil;
         eName = @"iwv";
     } else if ([name isEqualToString:@"apx_ec"]){
         eName = @"EC";
+    } else if ([name isEqualToString:@"apx_story"]) {
+        eName = @"story";
     }
     
     if (nil != eName) {

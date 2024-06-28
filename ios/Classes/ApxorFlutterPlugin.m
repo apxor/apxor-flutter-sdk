@@ -12,6 +12,7 @@
 #import "ApxorSDK/APXBidiDelegate.h"
 #import "APXFlutterBidiEventBus.h"
 #import "APXECFactory.h"
+#import "APXStoryFactory.h"
 
 static FlutterBasicMessageChannel *command_channel = nil;
 static FlutterBasicMessageChannel *card_channel = nil;
@@ -40,6 +41,8 @@ static NSObject<FlutterPluginRegistrar>* registar = nil;
             binaryMessenger:[registrar messenger]];
     APXECFactory *factory = [[APXECFactory alloc] initWithMessenger:registrar.messenger];
     [registrar registerViewFactory:factory withId:@"com.apxor.flutter/apxor_embeddedCard"];
+     APXStoryFactory *factory = [[APXStoryFactory alloc] initWithMessenger:registrar.messenger];
+    [registrar registerViewFactory:factory withId:@"com.apxor.flutter/apxor_stories"];
     ApxorFlutterPlugin* instance = [[ApxorFlutterPlugin alloc] init];
     [registrar addMethodCallDelegate:instance channel:channel];
     
@@ -137,6 +140,11 @@ static NSObject<FlutterPluginRegistrar>* registar = nil;
         dispatch_async(dispatch_get_main_queue(), ^{
             card_channel = [FlutterBasicMessageChannel messageChannelWithName:[NSString stringWithFormat:@"plugins.flutter.io/embeddedView%@",[data valueForKey:@"id"]] binaryMessenger:[registar messenger]
             codec:[FlutterJSONMessageCodec sharedInstance]];
+            [card_channel sendMessage:data];
+        });
+    } else if ([eName isEqualToString:@"story"]) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            card_channel = [FlutterBasicMessageChannel messageChannelWithName:[NSString stringWithFormat:@"plugins.flutter.io/story%@",[data objectForKey:@"id"]] binaryMessenger:[registar messenger] codec:[FlutterJSONMessageCodec sharedInstance]];
             [card_channel sendMessage:data];
         });
     }

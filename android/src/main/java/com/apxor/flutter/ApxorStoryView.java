@@ -26,10 +26,10 @@ class ApxorStoryView implements PlatformView {
     ApxorStoryView(@NonNull Context context, int id, @Nullable Map<String, Object> creationParams,
             final BinaryMessenger binaryMessenger) {
         try {
-            this.tag = creationParams.get("id").toString();
+            this.tag = "apx_story_" + creationParams.get("id").toString();
             viewChannel = new BasicMessageChannel<>(
                     binaryMessenger,
-                    "plugins.flutter.io/apxor_view_" + this.tag,
+                    "plugins.flutter.io/apxor_view_" + creationParams.get("id").toString(),
                     JSONMessageCodec.INSTANCE);
         } catch (Exception e) {
             Logger.debug("Apxor", "Flutter value key is not valid " + e.getMessage());

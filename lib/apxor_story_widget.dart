@@ -4,26 +4,25 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class ApxorStoryWidget extends StatefulWidget {
-  final String valueKey;
+  final int id;
 
-  const ApxorStoryWidget({Key? key, required this.valueKey}) : super(key: key);
+  const ApxorStoryWidget({Key? key, required this.id}) : super(key: key);
 
   @override
-  State<ApxorStoryWidget> createState() =>
-      ApxorStoryWidgetState("apx_story_" + valueKey);
+  State<ApxorStoryWidget> createState() => ApxorStoryWidgetState(id);
 }
 
 class ApxorStoryWidgetState extends State<ApxorStoryWidget>
     with AutomaticKeepAliveClientMixin {
   BasicMessageChannel<dynamic>? widgetChannel;
-  static final Map<String, Size> _widgetDimensions = {};
-  String valueKey;
+  static final Map<int, Size> _widgetDimensions = {};
+  int id;
   late double height;
   late double width;
   bool visible = false;
   bool keepAlive = false;
 
-  ApxorStoryWidgetState(this.valueKey);
+  ApxorStoryWidgetState(this.id);
 
   @override
   bool get wantKeepAlive => keepAlive;
@@ -31,56 +30,80 @@ class ApxorStoryWidgetState extends State<ApxorStoryWidget>
   @override
   void initState() {
     super.initState();
-    print("Apxor story widget created for $valueKey");
+    print("Apxor story widget created for $id");
+
+    double initialHeight =
+        (defaultTargetPlatform == TargetPlatform.android) ? 300 : 0;
 
     Size storedSize =
-        _widgetDimensions[valueKey] ?? const Size(double.infinity, 300);
+        _widgetDimensions[id] ?? Size(double.infinity, initialHeight);
 
     height = storedSize.height;
     width = storedSize.width;
 
-    visible = _widgetDimensions.containsKey(valueKey);
+    visible = _widgetDimensions.containsKey(id);
 
     if (width > 0 && height > 0) {
       keepAlive = true;
     }
 
-    widgetChannel = BasicMessageChannel(
-        "plugins.flutter.io/apxor_view_$valueKey", const JSONMessageCodec());
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      widgetChannel = BasicMessageChannel(
+          "plugins.flutter.io/apxor_view_$id", const JSONMessageCodec());
 
-    widgetChannel?.setMessageHandler((message) async {
-      try {
-        print("Apxor: Message received for $valueKey $message");
-        Map<String, dynamic> messageMap = message;
-        if (messageMap["method"] == "dim") {
-          String id = messageMap["id"];
-          if (valueKey != id) {
+      widgetChannel?.setMessageHandler((message) async {
+        try {
+          print("Apxor: Message received for $id $message");
+          Map<String, dynamic> messageMap = message;
+          if (messageMap["method"] == "dim") {
+            String id = messageMap["id"];
+            if (id != id) {
+              return;
+            }
+            int heightCalc = messageMap["height"];
+            int widthCalc = messageMap["width"];
+
+            if (id != id) {
+              return;
+            }
+
+            print("Apxor: Received Dimensions $id $heightCalc $widthCalc");
+            updateStoredDimensions(heightCalc.toDouble(), widthCalc.toDouble());
+          }
+        } catch (e) {
+          print("Apxor: Story Widget Error $e");
+        }
+      });
+    } else if (defaultTargetPlatform == TargetPlatform.iOS) {
+      widgetChannel = BasicMessageChannel(
+          "plugins.flutter.io/story${id.toString()}", JSONMessageCodec());
+      print("Basic Message Channel is $widgetChannel");
+      widgetChannel?.setMessageHandler((message) async {
+        try {
+          print("Apxor: Message received for $message");
+          Map<String, dynamic> messageMap = message;
+          if (messageMap["id"] != id.toString()) {
             return;
           }
           int heightCalc = messageMap["height"];
           int widthCalc = messageMap["width"];
-
-          if (valueKey != id) {
-            return;
-          }
-
-          print("Apxor: Received Dimensions $valueKey $heightCalc $widthCalc");
+          print("Apxor: Received Dimensions $id $heightCalc $widthCalc");
           updateStoredDimensions(heightCalc.toDouble(), widthCalc.toDouble());
+        } catch (e) {
+          print("Apxor: Embed Widget Error $e");
         }
-      } catch (e) {
-        print("Apxor: Story Widget Error $e");
-      }
-    });
+      });
+    }
   }
 
   void updateStoredDimensions(double newHeight, double newWidth) {
-    double? oldHeight = _widgetDimensions[valueKey]?.height;
-    double? oldWidth = _widgetDimensions[valueKey]?.width;
+    double? oldHeight = _widgetDimensions[id]?.height;
+    double? oldWidth = _widgetDimensions[id]?.width;
     if (oldHeight == newHeight && oldWidth == newWidth) {
       return;
     }
 
-    _widgetDimensions[valueKey] = Size(newWidth, newHeight);
+    _widgetDimensions[id] = Size(newWidth, newHeight);
 
     setState(() {
       height = newHeight;
@@ -99,10 +122,11 @@ class ApxorStoryWidgetState extends State<ApxorStoryWidget>
   Widget build(BuildContext context) {
     super.build(context);
     print(
-        "Apxor: Build called for ${valueKey} with size: $width x $height, visible: $visible");
+        "Apxor: Build called for ${id} with size: $width x $height, visible: $visible");
     const String viewType = 'com.apxor.flutter/ApxorStoryView';
     Map<String, dynamic> creationParams = <String, dynamic>{};
-    creationParams['id'] = valueKey;
+    creationParams['id'] = id;
+    const String iosViewType = 'com.apxor.flutter/apxor_stories';
 
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
@@ -112,7 +136,7 @@ class ApxorStoryWidgetState extends State<ApxorStoryWidget>
             width: double.infinity,
             height: height,
             child: AndroidView(
-              key: ValueKey(valueKey),
+              key: ValueKey("apx_story_$id"),
               viewType: viewType,
               layoutDirection: TextDirection.ltr,
               creationParams: creationParams,
@@ -125,6 +149,25 @@ class ApxorStoryWidgetState extends State<ApxorStoryWidget>
             ),
           ),
         );
+      case TargetPlatform.iOS:
+        return Offstage(
+          offstage: !visible,
+          child: SizedBox(
+            width: width,
+            height: height,
+            child: UiKitView(
+                key: ValueKey("apx_story_$id"),
+                viewType: iosViewType,
+                layoutDirection: TextDirection.ltr,
+                creationParams: creationParams,
+                creationParamsCodec: const StandardMessageCodec(),
+                gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
+                  Factory<OneSequenceGestureRecognizer>(
+                    () => HorizontalDragGestureRecognizer(),
+                  ),
+                }),
+          ),
+        );
       default:
         throw UnsupportedError('Unsupported platform view');
     }
@@ -132,7 +175,7 @@ class ApxorStoryWidgetState extends State<ApxorStoryWidget>
 
   @override
   void dispose() {
-    debugPrint("Apxor: Dispose called for $valueKey");
+    debugPrint("Apxor: Dispose called for $id");
     super.dispose();
   }
 }

@@ -476,6 +476,8 @@ class ApxorFlutter {
               .replaceFirst(">]", "");
           if (key.startsWith("apx_card_")) {
             n.isApxorWidget = true;
+          } else if (key.startsWith("apx_story_")) {
+            n.isApxorStoryWidget = true;
           }
         }
       }
@@ -730,6 +732,7 @@ class LT {
   LT? parent;
   String extractedUsing = "";
   bool isApxorWidget = false;
+  bool isApxorStoryWidget = false;
 
   List<LT> c = [];
 
@@ -787,7 +790,8 @@ class LT {
         ...((parent != null && parent!.k != null && parent!.k!.isNotEmpty)
             ? {"parent_id": parent!.k}
             : {}),
-        "is_embed_card_arena": isApxorWidget
+        "is_embed_card_arena": isApxorWidget,
+        "is_stories_arena": isApxorStoryWidget
       },
       'is_in_wv': isInWv,
       'wv_tag': wvTag,
