@@ -44,8 +44,8 @@ android {
 }
 
 dependencies {
-    implementation project(path: ':core')
-    implementation project(path: ':qe')
-    implementation project(path: ':rtm-x')
-    implementation project(path: ':wysiwyg')
+    compileOnly "com.apxor.androidx:apxor-android-sdk-core:3.0.9@aar"
+    compileOnly "com.apxor.androidx:apxor-android-sdk-qe:1.7.4@aar"
+    compileOnly "com.apxor.androidx:apxor-android-sdk-rtm:2.4.6@aar"
+    compileOnly "com.apxor.androidx:wysiwyg:1.5.5@aar"
 }
