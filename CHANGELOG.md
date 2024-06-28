@@ -18,3 +18,7 @@
 - Added Support for iOS
 - Added Support for Web
 - Added Support for WebView
+
+## 1.1.2
+
+- Added support for Embedded Cards
