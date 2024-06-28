@@ -476,7 +476,8 @@ class ApxorFlutter {
               .replaceFirst(">]", "");
           if (key.startsWith("apx_card_")) {
             n.isApxorWidget = true;
-          } else if (key.startsWith("apx_story_")) {
+          } else if (key.startsWith("apx_story_") &&
+              defaultTargetPlatform == TargetPlatform.iOS) {
             n.isApxorStoryWidget = true;
           }
         }
