@@ -60,7 +60,8 @@ public class ApxorFlutterPlugin implements FlutterPlugin, MethodCallHandler, Eve
             "plugins.flutter.io/apxor_commands",
             JSONMessageCodec.INSTANCE
     );
-
+    registerEmbedView(flutterPluginBinding);
+    registerStoryView(flutterPluginBinding);
     SDKController controller = SDKController.getInstance();
     controller.markAsFlutter();
     controller.registerToEvent(INTERNAL_EVENTS, this);
@@ -91,7 +92,7 @@ public class ApxorFlutterPlugin implements FlutterPlugin, MethodCallHandler, Eve
             eName = "d";
           } else if (name.equals(QYG)) {
             eName = "f";
-          } else if (name.equals("apx_iwv")){
+          } else if (name.equals("apx_iwv")) {
             eName = "iwv";
           } else if (name.equals("apx_avf")) {
             eName = "avf";
@@ -124,6 +125,13 @@ public class ApxorFlutterPlugin implements FlutterPlugin, MethodCallHandler, Eve
     channel.setMethodCallHandler(null);
     SDKController.getInstance().deregisterFromEvent(INTERNAL_EVENTS, this);
     SDKController.getInstance().setIsFlutter(false);
+  }
+
+  private void registerEmbedView(@NonNull FlutterPluginBinding flutterPluginBinding) {
+        flutterPluginBinding
+        .getPlatformViewRegistry()
+        .registerViewFactory("com.apxor.flutter/ApxorEmbedView", new ApxorEmbedViewFactory(
+                flutterPluginBinding.getBinaryMessenger()));
   }
 
   @Override
@@ -199,16 +207,16 @@ public class ApxorFlutterPlugin implements FlutterPlugin, MethodCallHandler, Eve
           handleBB();
           break;
         case "d":
-          try{
+          try {
             map.put("d", data.getDouble("d"));
-            map.put("js",data.optString("js"));
+            map.put("js", data.optString("js"));
             map.put("root_element", data.optString("root_element"));
-          } catch (Exception e){
-            
+          } catch (Exception e) {
+
           }
           break;
         case "avf":
-          map.put("d",data.getDouble("d"));
+          map.put("d", data.getDouble("d"));
           map.put("root_element", data.optString("root_element"));
           break;
         case "f":
@@ -222,11 +230,11 @@ public class ApxorFlutterPlugin implements FlutterPlugin, MethodCallHandler, Eve
             map.put("msgDuration", data.getInt("msgDuration"));
             map.put("uuid", data.getString("uuid"));
             map.put("configName", data.getString("configName"));
-            map.put("js",data.getString("js"));
+            map.put("js", data.getString("js"));
             map.put("root_element", data.optString("root_element"));
-          } catch (Exception e){
-                
-            }
+          } catch (Exception e) {
+
+          }
           break;
       }
       if (map.size() > 0) {
@@ -272,7 +280,7 @@ public class ApxorFlutterPlugin implements FlutterPlugin, MethodCallHandler, Eve
       }
       result.success(null);
     } catch (Exception e) {
-      result.error("Apxor", "Failed to parse attributes in log" + name +"Event. " + e.getMessage(), null);
+      result.error("Apxor", "Failed to parse attributes in log" + name + "Event. " + e.getMessage(), null);
     }
   }
 
@@ -287,6 +295,7 @@ public class ApxorFlutterPlugin implements FlutterPlugin, MethodCallHandler, Eve
   private void handleLogInternalEvent(MethodCall call, Result result) {
     handleMethodCall(call, result, "Internal");
   }
+
   private void handleSetUserIdentifier(MethodCall call, Result result) {
     String customUserId = call.argument("userId");
     ApxorSDK.setUserIdentifier(customUserId);
@@ -445,6 +454,13 @@ public class ApxorFlutterPlugin implements FlutterPlugin, MethodCallHandler, Eve
       a[i] = (char) (t.charAt(i) ^ 2);
     }
     return new String(a);
+  }
+
+  private void registerStoryView(@NonNull FlutterPluginBinding flutterPluginBinding) {
+    flutterPluginBinding
+        .getPlatformViewRegistry()
+        .registerViewFactory("com.apxor.flutter/ApxorStoryView", new ApxorStoryViewFactory(
+            flutterPluginBinding.getBinaryMessenger()));
   }
 
 }
