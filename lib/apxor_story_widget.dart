@@ -19,7 +19,7 @@ class ApxorStoryWidgetState extends State<ApxorStoryWidget>
   int id;
   late double height;
   late double width;
-  bool visible = false;
+  bool visible = true;
   bool keepAlive = false;
 
   ApxorStoryWidgetState(this.id);
@@ -41,7 +41,9 @@ class ApxorStoryWidgetState extends State<ApxorStoryWidget>
     height = storedSize.height;
     width = storedSize.width;
 
-    visible = _widgetDimensions.containsKey(id);
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      visible = _widgetDimensions.containsKey(id);
+    }
 
     if (width > 0 && height > 0) {
       keepAlive = true;
@@ -176,7 +178,9 @@ class ApxorStoryWidgetState extends State<ApxorStoryWidget>
   @override
   void dispose() {
     debugPrint("Apxor: Dispose called for $id");
-    _widgetDimensions.clear();
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      _widgetDimensions.clear();
+    }
     super.dispose();
   }
 }
