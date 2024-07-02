@@ -9,13 +9,16 @@
 #import <Foundation/Foundation.h>
 #import "APXFlutterBidiEventBus.h"
 #import "ApxorSDK/APXController.h"
+#import "ApxorFlutterPlugin.h"
+#import <Flutter/Flutter.h>
 
+static FlutterBasicMessageChannel *card_channel = nil;
+static NSObject<FlutterBinaryMessenger> *messenger = nil;
 @implementation APXFlutterBidiEventBus {
     NSString *eName;
     NSString *eTime;
     Receiver eReceiver;
 }
-
 - (void) sendAndGetWithData: (NSDictionary *)data receiver:(Receiver)receiver {
     id<APXBidiDelegate> otherBus = [[APXController sharedController] getBidiEventsBusWithKey:@"APXOR_FLUTTER_C"];
     if (nil != otherBus) {
@@ -40,6 +43,8 @@
         eName = @"avf";
     } else if ([name isEqualToString:@"apx_iwv"]) {
         eName = @"iwv";
+    } else if ([name isEqualToString:@"apx_ec"]){
+        eName = @"EC";
     }
     
     if (nil != eName) {
