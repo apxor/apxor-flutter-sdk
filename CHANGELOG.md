@@ -22,3 +22,7 @@
 ## 1.1.2
 
 - Added support for Embedded Cards
+
+## 1.1.3
+
+- Added check if element is mounted before accessing widget
