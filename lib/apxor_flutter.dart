@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:ui' as ui;
 
 import 'package:apxor_flutter/apxor_widget.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/foundation.dart';
-import 'dart:ui' as ui;
 
 typedef ApxDeeplinkListener = void Function(String? url);
 
@@ -442,11 +442,11 @@ class ApxorFlutter {
   static Element? getRootElement(String rootElement) {
     if ((rootElement.isEmpty || rootElement == 'context') &&
         _currentScreenName.isNotEmpty &&
-        _contexts.containsKey(_currentScreenName)) {
+        _contexts[_currentScreenName]!=null && _contexts[_currentScreenName]!.mounted) {
       extractedUsing = "context";
       return _contexts[_currentScreenName] as Element;
     } else if ((rootElement.isEmpty || rootElement == 'navigator') &&
-        _ctx != null) {
+        _ctx != null && _ctx!.mounted) {
       extractedUsing = "navigator";
       return _ctx as Element;
     } else {
@@ -527,6 +527,9 @@ class ApxorFlutter {
         LT ltn = LT();
         parent.c.add(ltn);
         ltn.parent = parent;
+        if(e==null || !e.mounted) {
+          continue;
+        }
         ltn.type = e?.widget.runtimeType.toString() ?? "W";
         RenderObject? obj = e?.findRenderObject();
         if (obj != null && obj is RenderBox) {
@@ -552,6 +555,10 @@ class ApxorFlutter {
         ltn.parentType = parentType;
         ltn.extractedUsing = extractedUsing;
         ltn.closestParent = closestParent;
+        if (!e.mounted) {
+          parent.c.remove(ltn);
+          continue;
+        }
         Widget? w = e?.widget;
         ltn.content = getText(w);
         if (!(w is ElevatedButton ||
@@ -622,6 +629,10 @@ class ApxorFlutter {
                 a.add(element);
               }
             });
+            if (!e.mounted) {
+              parent.c.remove(ltn);
+              continue;
+            }
             if (e?.widget is AppBar) {
               await _v(a, ltn, "AppBar", closestParent, extractedUsing);
             } else if (e?.widget is ListView) {
