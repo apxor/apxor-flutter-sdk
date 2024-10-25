@@ -240,7 +240,7 @@ public class ApxorFlutterPlugin implements FlutterPlugin, MethodCallHandler, Eve
         map.put("name", eventName);
         map.put("t", time);
         controller.dispatchToMainThread(() -> {
-          Logger.debug("", "Command: " + map);
+          Logger.debug("", "Command: " + map.get("name"));
           commandChannel.send(map);
         }, 0);
       }
@@ -433,7 +433,6 @@ public class ApxorFlutterPlugin implements FlutterPlugin, MethodCallHandler, Eve
         if (result != null) {
           response = new JSONObject((HashMap<String, Object>) result);
         }
-        Logger.debug("", "Result: " + result + ", response: " + response);
         receiver.onReceive(response);
       } catch (Exception e) {
         e.printStackTrace();
