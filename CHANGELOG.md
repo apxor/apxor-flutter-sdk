@@ -26,3 +26,7 @@
 ## 1.1.3
 
 - Added check if element is mounted before accessing widget
+
+## 1.1.5
+
+- Removed string manipulations in the log statements in MainThread.
