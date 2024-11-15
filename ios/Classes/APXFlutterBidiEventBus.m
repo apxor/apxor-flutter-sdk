@@ -18,6 +18,7 @@ static NSObject<FlutterBinaryMessenger> *messenger = nil;
     NSString *eName;
     NSString *eTime;
     Receiver eReceiver;
+    NSMutableDictionary *receivers;
 }
 - (void) sendAndGetWithData: (NSDictionary *)data receiver:(Receiver)receiver {
     id<APXBidiDelegate> otherBus = [[APXController sharedController] getBidiEventsBusWithKey:@"APXOR_FLUTTER_C"];
@@ -48,6 +49,12 @@ static NSObject<FlutterBinaryMessenger> *messenger = nil;
     }
     
     if (nil != eName) {
+        if (receivers == nil) {
+            receivers = [NSMutableDictionary dictionary];
+        }
+        //add receivers to it
+        [receivers setValue:receiver forKey:[[eName stringByAppendingString:@"_"] stringByAppendingString:eTime]];
+        
         [[APXController sharedController] logInternalEventWithName:eName info:data];
         [[APXController sharedController] registerForEventWithType:APXEventTypeInternal listener:self];
     }
@@ -56,9 +63,13 @@ static NSObject<FlutterBinaryMessenger> *messenger = nil;
 - (void)onEvent:(APXEvent *)event {
     NSDictionary *data = [event getAdditionalInfo];
     NSString *eventName = event.identifier;
-    if ([eventName isEqualToString:[[eName stringByAppendingString:@"_"] stringByAppendingString:eTime]]) {
+    
+    if ([receivers objectForKey:eventName]) {
         [[APXController sharedController] deregisterForEventWithType:APXEventTypeInternal listener:self];
-        eReceiver([data valueForKey:@"r"]);
+        Receiver eventReceiver = [self->receivers objectForKey:eventName];
+        eventReceiver([data valueForKey:@"r"]);
+        
+        [receivers removeObjectForKey:eventName];
     }
 }
 
