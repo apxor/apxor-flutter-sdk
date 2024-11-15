@@ -15,9 +15,6 @@
 static FlutterBasicMessageChannel *card_channel = nil;
 static NSObject<FlutterBinaryMessenger> *messenger = nil;
 @implementation APXFlutterBidiEventBus {
-    NSString *eName;
-    NSString *eTime;
-    Receiver eReceiver;
     NSMutableDictionary *receivers;
 }
 - (void) sendAndGetWithData: (NSDictionary *)data receiver:(Receiver)receiver {
@@ -28,13 +25,13 @@ static NSObject<FlutterBinaryMessenger> *messenger = nil;
 }
 
 - (void)receiveAndRespondWithData:(NSMutableDictionary *)data receiver:(Receiver)receiver {
-    eName = nil;
-    eReceiver = receiver;
+    NSString *eName = nil;
+    Receiver eReceiver = receiver;
     NSString *name = [data valueForKey:@"n"];
     NSTimeInterval currentTimeMillis = [[NSDate date] timeIntervalSince1970] * 1000;
     long long time = (long long)currentTimeMillis;
     [data setValue:@(time) forKey:@"t"];
-    eTime = [NSString stringWithFormat:@"%lld", time];
+    NSString *eTime = [NSString stringWithFormat:@"%lld", time];
     
     if ([name isEqualToString:@"apx_d"]) {
         eName = @"d";
