@@ -30,3 +30,7 @@
 ## 1.1.5
 
 - Removed string manipulations in the log statements in MainThread.
+
+## 1.1.7
+
+- Fixed race condition in receiver handling (iOS).
