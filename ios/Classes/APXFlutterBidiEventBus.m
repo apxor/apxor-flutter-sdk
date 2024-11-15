@@ -50,7 +50,7 @@ static NSObject<FlutterBinaryMessenger> *messenger = nil;
             receivers = [NSMutableDictionary dictionary];
         }
         //add receivers to it
-        [receivers setValue:receiver forKey:[[eName stringByAppendingString:@"_"] stringByAppendingString:eTime]];
+        [receivers setValue:eReceiver forKey:[[eName stringByAppendingString:@"_"] stringByAppendingString:eTime]];
         
         [[APXController sharedController] logInternalEventWithName:eName info:data];
         [[APXController sharedController] registerForEventWithType:APXEventTypeInternal listener:self];
