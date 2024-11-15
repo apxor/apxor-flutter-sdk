@@ -15,9 +15,7 @@
 static FlutterBasicMessageChannel *card_channel = nil;
 static NSObject<FlutterBinaryMessenger> *messenger = nil;
 @implementation APXFlutterBidiEventBus {
-    NSString *eName;
-    NSString *eTime;
-    Receiver eReceiver;
+    NSMutableDictionary *receivers;
 }
 - (void) sendAndGetWithData: (NSDictionary *)data receiver:(Receiver)receiver {
     id<APXBidiDelegate> otherBus = [[APXController sharedController] getBidiEventsBusWithKey:@"APXOR_FLUTTER_C"];
@@ -27,13 +25,13 @@ static NSObject<FlutterBinaryMessenger> *messenger = nil;
 }
 
 - (void)receiveAndRespondWithData:(NSMutableDictionary *)data receiver:(Receiver)receiver {
-    eName = nil;
-    eReceiver = receiver;
+    NSString *eName = nil;
+    Receiver eReceiver = receiver;
     NSString *name = [data valueForKey:@"n"];
     NSTimeInterval currentTimeMillis = [[NSDate date] timeIntervalSince1970] * 1000;
     long long time = (long long)currentTimeMillis;
     [data setValue:@(time) forKey:@"t"];
-    eTime = [NSString stringWithFormat:@"%lld", time];
+    NSString *eTime = [NSString stringWithFormat:@"%lld", time];
     
     if ([name isEqualToString:@"apx_d"]) {
         eName = @"d";
@@ -48,6 +46,12 @@ static NSObject<FlutterBinaryMessenger> *messenger = nil;
     }
     
     if (nil != eName) {
+        if (receivers == nil) {
+            receivers = [NSMutableDictionary dictionary];
+        }
+        //add receivers to it
+        [receivers setValue:eReceiver forKey:[[eName stringByAppendingString:@"_"] stringByAppendingString:eTime]];
+        
         [[APXController sharedController] logInternalEventWithName:eName info:data];
         [[APXController sharedController] registerForEventWithType:APXEventTypeInternal listener:self];
     }
@@ -56,9 +60,13 @@ static NSObject<FlutterBinaryMessenger> *messenger = nil;
 - (void)onEvent:(APXEvent *)event {
     NSDictionary *data = [event getAdditionalInfo];
     NSString *eventName = event.identifier;
-    if ([eventName isEqualToString:[[eName stringByAppendingString:@"_"] stringByAppendingString:eTime]]) {
+    
+    if ([receivers objectForKey:eventName]) {
         [[APXController sharedController] deregisterForEventWithType:APXEventTypeInternal listener:self];
-        eReceiver([data valueForKey:@"r"]);
+        Receiver eventReceiver = [self->receivers objectForKey:eventName];
+        eventReceiver([data valueForKey:@"r"]);
+        
+        [receivers removeObjectForKey:eventName];
     }
 }
 
