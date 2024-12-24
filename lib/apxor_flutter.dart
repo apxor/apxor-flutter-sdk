@@ -23,6 +23,7 @@ var k6 = x([0x74, 0x6f, 0x70]);
 var k7 = x([0x62, 0x6f, 0x74, 0x74, 0x6f, 0x6d]);
 var k8 = x([0x6c, 0x65, 0x66, 0x74]);
 var k9 = x([0x72, 0x69, 0x67, 0x68, 0x74]);
+const version = "1.1.7"
 
 class ApxorFlutter {
   static const MethodChannel apxorMethodChannel =
@@ -194,6 +195,7 @@ class ApxorFlutter {
           break;
       }
     });
+    setSessionAttributes({"apx_flutter_sdk_version" , version})
     print("Apxor FlutterSDK initialized");
     return true;
   }
