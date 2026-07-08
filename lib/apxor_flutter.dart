@@ -9,6 +9,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 
 typedef ApxDeeplinkListener = void Function(String? url);
+typedef ApxKeyValueListener = void Function(List<Map<String, dynamic>> data);
 
 dynamic x(dynamic r) {
   return const Utf8Decoder().convert(base64Decode(base64Encode(r)));
@@ -31,6 +32,8 @@ class ApxorFlutter {
   static bool _isInitialized = false;
 
   static ApxDeeplinkListener? _deeplinkListener;
+
+  static ApxKeyValueListener? _keyValueListener;
 
   static double density = 1;
 
@@ -160,6 +163,19 @@ class ApxorFlutter {
             }
             break;
           }
+        case "key_value":
+        {
+          final rawData = message["apx_key_value"];
+          if (_keyValueListener != null && rawData != null) {
+            final data = (rawData as List)
+                .map((item) => Map<String, dynamic>.from(item as Map))
+                .toList();
+            _keyValueListener!(data);
+          } else {
+          print("Error: Invalid string or no listener");
+          }
+           break;
+        }
         case "iwv":
           {
             String? js = message["js"];
@@ -330,6 +346,11 @@ class ApxorFlutter {
   static void setDeeplinkListener(ApxDeeplinkListener callback) {
     _ensureInitialized();
     _deeplinkListener = callback;
+  }
+
+  static void setKeyValueListener(ApxKeyValueListener callback) {
+    _ensureInitialized();
+    _keyValueListener = callback;
   }
 
   static Future<String?> getDeviceId() async {
