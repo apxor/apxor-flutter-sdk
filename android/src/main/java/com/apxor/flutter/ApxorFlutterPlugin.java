@@ -202,6 +202,14 @@ public class ApxorFlutterPlugin implements FlutterPlugin, MethodCallHandler, Eve
           map.put("u", data.getJSONObject(ADDITIONAL_INFO).getString("url"));
           eventName = "redirect";
           break;
+        case "apx_key_value_redirection":
+          // Forward the array of {name, value} objects to the Dart side. The
+          // JSONArray is preserved end-to-end: JSONMessageCodec wraps values
+          // via JSONUtil.wrap (which leaves JSONArray/JSONObject as-is), then
+          // serializes to JSON; the Dart side decodes it as List<Map>.
+          map.put("apx_key_value", data.getJSONObject(ADDITIONAL_INFO).getJSONArray("apx_key_value"));
+          eventName = "key_value";
+          break;
         case "apx_hard_back_button_pressed":
           handleBB();
           break;
