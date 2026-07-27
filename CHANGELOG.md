@@ -34,3 +34,7 @@
 ## 1.1.7
 
 - Fixed race condition in receiver handling (iOS).
+
+## 1.1.8
+
+- added Key value redirection support for flutter.
