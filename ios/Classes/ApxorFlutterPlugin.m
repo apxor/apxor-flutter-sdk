@@ -133,7 +133,15 @@ static NSObject<FlutterPluginRegistrar>* registar = nil;
         dispatch_async(dispatch_get_main_queue(), ^{
             [command_channel sendMessage:eData];
         });
-    } else if ([eName isEqualToString:@"EC"]) {
+    } else if ([eName isEqualToString:@"apx_key_value_redirection"]) {
+        NSMutableDictionary *eData = [NSMutableDictionary dictionary];
+        [eData setValue:data[@"apx_key_value"] forKey:@"apx_key_value"];
+         [eData setValue:@"key_value" forKey:@"name"];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [command_channel sendMessage:eData];
+        });
+    }
+    else if ([eName isEqualToString:@"EC"]) {
         dispatch_async(dispatch_get_main_queue(), ^{
             card_channel = [FlutterBasicMessageChannel messageChannelWithName:[NSString stringWithFormat:@"plugins.flutter.io/embeddedView%@",[data valueForKey:@"id"]] binaryMessenger:[registar messenger]
             codec:[FlutterJSONMessageCodec sharedInstance]];
